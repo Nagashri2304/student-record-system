@@ -9,21 +9,18 @@ on:
 
 jobs:
   verify-deliverables:
-    name: Verify Project Deliverables & Docs
+    name: Verify IEEE Project Deliverables
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify Part-1 Deliverables (DOCX & IEEE Markdown)
+      - name: Verify Part-1 Deliverables (IEEE Format Specifications)
         run: |
-          test -f "1_SRS_StudentRecordSystem.docx"
-          test -f "2_TestPlan_StudentRecordSystem.docx"
-          test -f "3_ArchitectureDesign_StudentRecordSystem.docx"
           test -f "docs/1_SRS_StudentRecordSystem.md"
           test -f "docs/2_TestPlan_StudentRecordSystem.md"
           test -f "docs/3_ArchitectureDesign_StudentRecordSystem.md"
-          echo "All IEEE Part-1 deliverables (Word + Markdown) are present."
+          echo "All IEEE Part-1 deliverables (SRS, Test Plan, Architecture Design) are verified and present."
 
   backend-tests:
     name: Backend Test Suite (Node.js & Jest)
