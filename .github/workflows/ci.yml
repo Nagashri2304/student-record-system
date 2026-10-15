@@ -17,8 +17,10 @@ jobs:
 
       - name: Verify Documentation Files
         run: |
-          test -f "docs/1_SRS_StudentRecordSystem.md"
-          test -f "docs/2_TestPlan_StudentRecordSystem.md"
-          test -f "docs/3_ArchitectureDesign_StudentRecordSystem.md"
+          test -f "docs/1_SRS_StudentRecordSystem.docx"
+          test -f "docs/2_TestPlan_StudentRecordSystem.docx"
+          test -f "docs/3_ArchitectureDesign_StudentRecordSystem.docx"
+          test -f "docs/use_case_diagram.drawio"
+          test -f "docs/use_case_diagram.png"
           test -f "README.md"
-          echo "All required Deliverables Part-1 documentation files are present and verified."
+          echo "All required Deliverables Part-1 Word documents and draw.io diagrams are present and verified."

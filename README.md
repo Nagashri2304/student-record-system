@@ -19,15 +19,16 @@ A web-based **Student Record System** for universities and institutions to track
 
 ---
 
-## 📁 Deliverables Part-1: IEEE Specifications
+## 📁 Deliverables Part-1: IEEE Specifications (Word Documents & draw.io)
 
-All Part-1 specifications are drafted in standard IEEE format and maintained in `docs/`:
+All Part-1 specifications are provided as formal Word documents (`.docx`) and native draw.io diagram specifications maintained in `docs/`:
 
-| Deliverable | IEEE Standard | Specification Document Link | Scope & Highlights |
+| Deliverable | Standard / Format | Document Link | Scope & Highlights |
 |---|---|---|---|
-| **1. Software Requirements Specification** | IEEE Std 830-1998 | [docs/1_SRS_StudentRecordSystem.md](docs/1_SRS_StudentRecordSystem.md) | 15 Functional Requirements (FR-01 to FR-15), 8 Measurable NFRs, 4 Security Objectives & Mermaid UML Use Case Diagram |
-| **2. Software Test Plan** | IEEE Std 829-2008 | [docs/2_TestPlan_StudentRecordSystem.md](docs/2_TestPlan_StudentRecordSystem.md) | Test Strategy, Section 5.1 Security Validation, Full Traceability Matrix & 10 Detailed Test Cases (TC-01 to TC-10) |
-| **3. Architecture & Design Specification** | IEEE Std 1016-2009 | [docs/3_ArchitectureDesign_StudentRecordSystem.md](docs/3_ArchitectureDesign_StudentRecordSystem.md) | 3-Tier Client-Server Pattern, Component Diagram, 3 UML Sequence Diagrams, REST API Design & ER Diagram |
+| **1. Software Requirements Specification** | IEEE Std 830-1998 (`.docx`) | [docs/1_SRS_StudentRecordSystem.docx](docs/1_SRS_StudentRecordSystem.docx) | 15 Functional Requirements (FR-01 to FR-15), 8 Measurable NFRs, 4 Security Objectives & Embedded draw.io UML Use Case Diagram |
+| **2. Software Test Plan** | IEEE Std 829-2008 (`.docx`) | [docs/2_TestPlan_StudentRecordSystem.docx](docs/2_TestPlan_StudentRecordSystem.docx) | Test Strategy, Section 5.1 Security Validation, Full Traceability Matrix & 10 Detailed Test Cases (TC-01 to TC-10) |
+| **3. Architecture & Design Specification** | IEEE Std 1016-2009 (`.docx`) | [docs/3_ArchitectureDesign_StudentRecordSystem.docx](docs/3_ArchitectureDesign_StudentRecordSystem.docx) | 3-Tier Layered Pattern, Component Decomposition, 3 Sequence Workflows, REST API Specifications & 3NF ER Relational Schemas |
+| **4. UML Use Case Diagram (draw.io)** | draw.io XML / PNG | [docs/use_case_diagram.drawio](docs/use_case_diagram.drawio) / [PNG](docs/use_case_diagram.png) | Native editable draw.io diagram covering Administrator, Faculty, Student, Parent actors & UC-01 to UC-12 |
 
 ---
 
