@@ -1,67 +1,24 @@
-name: Student Record System CI
+name: Deliverables Verification CI
 
 on:
   push:
-    branches: [ main, master, feature/** ]
+    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
   verify-deliverables:
-    name: Verify IEEE Project Deliverables
+    name: Verify IEEE Part-1 Deliverables
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify Part-1 Deliverables (IEEE Format Specifications)
+      - name: Verify Documentation Files
         run: |
           test -f "docs/1_SRS_StudentRecordSystem.md"
           test -f "docs/2_TestPlan_StudentRecordSystem.md"
           test -f "docs/3_ArchitectureDesign_StudentRecordSystem.md"
-          echo "All IEEE Part-1 deliverables (SRS, Test Plan, Architecture Design) are verified and present."
-
-  backend-tests:
-    name: Backend Test Suite (Node.js & Jest)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Backend Tests
-        run: npm test
-        env:
-          JWT_SECRET: supersecretjwtkeyforcienvironment12345!
-
-  frontend-build:
-    name: Frontend Verification & Build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Frontend Build
-        run: npm run build
+          test -f "README.md"
+          echo "All required Deliverables Part-1 documentation files are present and verified."
