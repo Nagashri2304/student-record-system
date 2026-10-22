@@ -1,4 +1,4 @@
-
+﻿
 /* ===== EduTrack Dashboard Styles ===== */
 
 #root {
@@ -862,5 +862,192 @@
 @media (prefers-reduced-motion: reduce) {
   .sidebar {
     transition: none;
+  }
+}
+
+/* Login styles */
+
+/* Authentication screen */
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f4f7fb;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 36px;
+  background: #fff;
+  border: 1px solid #e5eaf2;
+  border-radius: 20px;
+  box-shadow: 0 18px 55px rgba(24, 39, 75, 0.09);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+
+.login-brand > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.login-brand strong {
+  color: #17233b;
+  font-size: 20px;
+}
+
+.login-brand span {
+  color: #8792a5;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+}
+
+.login-heading {
+  margin-bottom: 26px;
+}
+
+.login-eyebrow {
+  color: #4768e8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.login-heading h1 {
+  margin: 10px 0;
+  color: #17233b;
+  font-size: 28px;
+}
+
+.login-heading > p:last-child,
+.login-footnote {
+  color: #77839a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-form label {
+  margin-top: 8px;
+  color: #34415a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+  color: #17233b;
+  background: #fff;
+  border: 1px solid #dce3ee;
+  border-radius: 9px;
+  font: inherit;
+}
+
+.login-form input:focus {
+  outline: 2px solid #d5ddff;
+  border-color: #4768e8;
+}
+
+.login-submit {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 14px;
+}
+
+.login-submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.login-error {
+  padding: 10px 12px;
+  color: #a52626;
+  background: #fff0f0;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-footnote {
+  margin: 22px 0 0;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .login-page {
+    padding: 14px;
+  }
+
+  .login-card {
+    padding: 26px 22px;
+  }
+
+  .login-heading h1 {
+    font-size: 24px;
+  }
+}
+
+
+/* Profile layout */
+.profile-details {
+  width: 100%;
+  max-width: 620px;
+  margin: 24px auto;
+  border: 1px solid #e8ebf3;
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.profile-detail-row {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8ebf3;
+}
+
+.profile-detail-row:last-child {
+  border-bottom: 0;
+}
+
+.profile-detail-row span {
+  color: #758099;
+  font-size: 13px;
+}
+
+.profile-detail-row strong {
+  color: #202a40;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.sample-notice {
+  margin: 0 0 20px;
+  color: #758099;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+  .profile-detail-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 }
