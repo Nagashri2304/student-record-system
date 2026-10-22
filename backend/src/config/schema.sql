@@ -101,3 +101,72 @@ CREATE TABLE IF NOT EXISTS enrollments (
 
 CREATE INDEX IF NOT EXISTS idx_enrollments_student ON enrollments(student_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_course ON enrollments(course_id);
+
+-- 7. Attendance Sessions Table (FR-04: Daily Attendance Marking & Session Validation Engine)
+-- Author: Nagashree R Patil (@Nagashri2304)
+CREATE TABLE IF NOT EXISTS attendance_sessions (
+    session_id BIGSERIAL PRIMARY KEY,
+    course_id BIGINT NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
+    faculty_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
+    session_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    period INT NOT NULL DEFAULT 1,
+    topic VARCHAR(255) DEFAULT 'Lecture Session',
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_attendance_sessions_course ON attendance_sessions(course_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_sessions_date ON attendance_sessions(session_date);
+
+-- 8. Attendance Records Table (Per Student Status)
+CREATE TABLE IF NOT EXISTS attendance_records (
+    record_id BIGSERIAL PRIMARY KEY,
+    session_id BIGINT NOT NULL REFERENCES attendance_sessions(session_id) ON DELETE CASCADE,
+    student_id BIGINT NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('present', 'absent', 'late')),
+    remarks TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_session_student UNIQUE (session_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_attendance_records_student ON attendance_records(student_id);
+
+-- 9. Subject Grades & Marks Evaluation Table (FR-05)
+-- Author: Nagashree R Patil (@Nagashri2304)
+CREATE TABLE IF NOT EXISTS grades (
+    grade_id BIGSERIAL PRIMARY KEY,
+    course_id BIGINT NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
+    student_id BIGINT NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
+    marks NUMERIC(5, 2) NOT NULL CHECK (marks >= 0 AND marks <= 100),
+    letter_grade VARCHAR(5) NOT NULL CHECK (letter_grade IN ('S', 'A', 'B', 'C', 'D', 'E', 'F')),
+    grade_points INT NOT NULL CHECK (grade_points >= 0 AND grade_points <= 10),
+    note TEXT NOT NULL DEFAULT 'Initial evaluation',
+    created_by BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    updated_by BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_course_student_grade UNIQUE (course_id, student_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_grades_student ON grades(student_id);
+CREATE INDEX IF NOT EXISTS idx_grades_course ON grades(course_id);
+
+-- 10. Immutable Security Audit Trail Table (FR-05, FR-07, SEC-03)
+-- Author: Nagashree R Patil (@Nagashri2304)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    audit_id BIGSERIAL PRIMARY KEY,
+    action VARCHAR(50) NOT NULL,
+    course_id BIGINT REFERENCES courses(course_id) ON DELETE SET NULL,
+    student_id BIGINT REFERENCES students(student_id) ON DELETE SET NULL,
+    old_marks NUMERIC(5, 2),
+    new_marks NUMERIC(5, 2),
+    letter_grade VARCHAR(5),
+    note TEXT,
+    actor_user_id BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_course ON audit_logs(course_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_student ON audit_logs(student_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_user_id);

@@ -8,6 +8,8 @@ const { verifyToken, authorizeRoles } = require('../middleware/roleAuth');
 const { authorizeStudentAccess } = require('../middleware/objectAuth');
 const studentController = require('../controllers/studentController');
 const courseController = require('../controllers/courseController');
+const attendanceController = require('../controllers/attendanceController');
+const gradeController = require('../controllers/gradeController');
 
 const router = express.Router();
 
@@ -28,5 +30,11 @@ router.delete('/:id', verifyToken, authorizeRoles('Admin'), studentController.ar
 
 // Student Course Enrollments
 router.get('/:id/enrollments', verifyToken, authorizeStudentAccess, courseController.getStudentEnrollments);
+
+// Student Attendance Summary (FR-04, Issue #1 - Nagashri2304)
+router.get('/:id/attendance', verifyToken, attendanceController.getStudentAttendance);
+
+// Student Grades & Computed GPA (FR-05, Issue #2 - Nagashri2304)
+router.get('/:id/grades', verifyToken, gradeController.getStudentGrades);
 
 module.exports = router;
