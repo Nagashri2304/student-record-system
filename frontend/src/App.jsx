@@ -1,8 +1,8 @@
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import './App.css'
 
-const roles = ['Student', 'Faculty', 'Admin', 'Parent']
+const API_BASE_URL = 'http://127.0.0.1:5001/api/v1'
 
 const sampleGrades = [
   { subject: 'Data Structures', code: 'CS201', marks: 86, grade: 'A' },
@@ -18,32 +18,175 @@ const sampleAttendance = [
   { subject: 'Computer Networks', attended: 21, total: 26 },
 ]
 
+const roleMenus = {
+  Student: ['Overview', 'My Grades', 'My Attendance', 'My Profile'],
+  Faculty: ['Overview', 'My Courses', 'Enter Marks', 'Attendance'],
+  Admin: ['Overview', 'Students', 'Faculty', 'Courses'],
+  Parent: ['Overview', 'Student Progress', 'Grades', 'Attendance'],
+}
+
 function App() {
-  const [role, setRole] = useState('Student')
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('edutrack_user') || 'null')
+    } catch {
+      return null
+    }
+  })
+
+  const [token, setToken] = useState(
+    () => sessionStorage.getItem('edutrack_token') || ''
+  )
+  const [email, setEmail] = useState('student@edutrack.edu')
+  const [password, setPassword] = useState('Password@123')
+  const [loginError, setLoginError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [page, setPage] = useState('Overview')
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const navItems = role === 'Student'
-    ? ['Overview', 'My Grades', 'My Attendance', 'My Profile']
-    : role === 'Faculty'
-      ? ['Overview', 'My Courses', 'Enter Marks', 'Attendance']
-      : role === 'Admin'
-        ? ['Overview', 'Students', 'Faculty', 'Courses']
-        : ['Overview', 'Student Progress', 'Grades', 'Attendance']
+  const role = user?.role || 'Student'
+  const navItems = roleMenus[role] || roleMenus.Student
 
-  const totalAttended = sampleAttendance.reduce(
-    (sum, item) => sum + item.attended, 0
+  const totalAttended = useMemo(
+    () => sampleAttendance.reduce((sum, item) => sum + item.attended, 0),
+    []
   )
-  const totalClasses = sampleAttendance.reduce(
-    (sum, item) => sum + item.total, 0
-  )
-  const attendancePercent = Math.round(totalAttended / totalClasses * 100)
 
-  function changeRole(nextRole) {
-    setRole(nextRole)
+  const totalClasses = useMemo(
+    () => sampleAttendance.reduce((sum, item) => sum + item.total, 0),
+    []
+  )
+
+  const attendancePercent = Math.round(
+    (totalAttended / totalClasses) * 100
+  )
+
+  const averageMarks = Math.round(
+    sampleGrades.reduce((sum, item) => sum + item.marks, 0) /
+      sampleGrades.length
+  )
+
+  async function handleLogin(event) {
+    event.preventDefault()
+    setLoginError('')
+    setLoading(true)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success || !data.token || !data.user) {
+        throw new Error(data.message || 'Login failed. Check your credentials.')
+      }
+
+      sessionStorage.setItem('edutrack_token', data.token)
+      sessionStorage.setItem('edutrack_user', JSON.stringify(data.user))
+
+      setToken(data.token)
+      setUser(data.user)
+      setPage('Overview')
+      setPassword('')
+    } catch (error) {
+      setLoginError(
+        error.message ||
+          'Unable to connect to the server. Check that the backend is running on port 5001.'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleLogout() {
+    sessionStorage.removeItem('edutrack_token')
+    sessionStorage.removeItem('edutrack_user')
+    setToken('')
+    setUser(null)
+    setPassword('')
+    setLoginError('')
     setPage('Overview')
     setMenuOpen(false)
   }
+
+  function navigateTo(nextPage) {
+    setPage(nextPage)
+    setMenuOpen(false)
+  }
+
+  if (!user || !token) {
+    return (
+      <div className="login-page">
+        <div className="login-card">
+          <div className="login-brand">
+            <div className="brand-mark">E</div>
+            <div>
+              <strong>EduTrack</strong>
+              <span>STUDENT RECORD SYSTEM</span>
+            </div>
+          </div>
+
+          <div className="login-heading">
+            <p className="login-eyebrow">WELCOME BACK</p>
+            <h1>Sign in to EduTrack</h1>
+            <p>Access your academic information and dashboard.</p>
+          </div>
+
+          <form className="login-form" onSubmit={handleLogin}>
+            <label htmlFor="email">Email address</label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="username"
+              placeholder="Enter your institutional email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+
+            {loginError && (
+              <div className="login-error" role="alert">
+                {loginError}
+              </div>
+            )}
+
+            <button
+              className="primary-button login-submit"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+
+          <p className="login-footnote">
+            Secure access for students, faculty, administrators and parents.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  const isStudentAcademicPage =
+    role === 'Student' &&
+    ['Overview', 'My Grades', 'My Attendance'].includes(page)
 
   return (
     <div className="app-shell">
@@ -57,34 +200,28 @@ function App() {
         </div>
 
         <div className="workspace-label">WORKSPACE</div>
+
         <div className="role-picker">
-          <label htmlFor="role">Preview dashboard as</label>
-          <select
-            id="role"
-            value={role}
-            onChange={(e) => changeRole(e.target.value)}
-          >
-            {roles.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
+          <label htmlFor="role">Signed in as</label>
+          <select id="role" value={role} disabled>
+            <option value={role}>{role}</option>
           </select>
         </div>
 
         <div className="nav-label">MENU</div>
+
         <nav className="navigation" aria-label="Main navigation">
           {navItems.map((item, index) => (
             <button
               key={item}
+              type="button"
               className={`nav-item ${page === item ? 'active' : ''}`}
-              onClick={() => {
-                setPage(item)
-                setMenuOpen(false)
-              }}
+              onClick={() => navigateTo(item)}
             >
               <span className="nav-icon">
                 {['◫', '▤', '◷', '○'][index % 4]}
               </span>
-              {item}
+              <span>{item}</span>
               {item === 'My Grades' && <span className="nav-dot" />}
             </button>
           ))}
@@ -96,117 +233,114 @@ function App() {
             <strong>Need help?</strong>
             <p>Contact your institution's support team.</p>
           </div>
+
           <div className="profile-mini">
-            <div className="avatar">{role[0]}</div>
+            <div className="avatar">{role.charAt(0).toUpperCase()}</div>
             <div className="profile-info">
-              <strong>{role} preview</strong>
-              <span>{role.toLowerCase()}@edutrack.demo</span>
+              <strong>{user.email}</strong>
+              <span>{role}</span>
             </div>
           </div>
         </div>
       </aside>
 
+      {menuOpen && (
+        <button
+          className="mobile-overlay"
+          aria-label="Close navigation"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
       <main className="main-area">
         <header className="topbar">
           <button
             className="mobile-menu"
-            onClick={() => setMenuOpen(!menuOpen)}
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
             aria-label="Toggle menu"
           >
             ☰
           </button>
+
           <div className="breadcrumb">
             Workspace <span>/</span> {page}
           </div>
-          <div className="topbar-right">
-            <span className="status-pill"><span /> Academic portal</span>
-            <div className="avatar top-avatar">{role[0]}</div>
-          </div>
+
+          <button
+            className="text-button"
+            type="button"
+            onClick={handleLogout}
+          >
+            Sign out
+          </button>
         </header>
 
-        <section className="page-content">
+        <section className="content-area">
           <div className="welcome-row">
             <div>
-              <p className="eyebrow">ACADEMIC WORKSPACE</p>
-              <h1>{page === 'Overview' ? 'Welcome to EduTrack' : page}</h1>
-              <p className="subtitle">
-                {role === 'Student'
-                  ? 'Your academic progress, all in one place.'
-                  : `Your ${role.toLowerCase()} workspace for academic management.`}
+              <p className="eyebrow">YOUR LEARNING SPACE</p>
+              <h1>
+                {page === 'Overview' ? 'Your academic overview' : page}
+              </h1>
+              <p className="welcome-description">
+                Welcome back, {user.email}.
               </p>
             </div>
-            <div className="term-chip">
-              <span>●</span> Academic year 2026–27
+
+            <div className="date-chip">
+              <span className="status-dot" />
+              {role} account
             </div>
           </div>
 
-          <div className="prototype-notice">
-            <span className="notice-icon">i</span>
-            <div>
-              <strong>UI prototype</strong>
-              <p>
-                Displayed grades and attendance are sample data. Live student
-                records will appear after API integration.
-              </p>
-            </div>
-          </div>
+          <p className="sample-notice">
+            Grades and attendance shown here are sample data. Live academic
+            records will appear after the academic APIs are integrated.
+          </p>
 
-          {role === 'Student' &&
-          ['Overview', 'My Grades', 'My Attendance'].includes(page) ? (
+          {isStudentAcademicPage ? (
             <>
-              <div className="section-heading">
-                <div>
-                  <h2>
-                    {page === 'Overview' ? 'Academic overview' : page}
-                  </h2>
-                  <p>Semester 1 · Your current academic snapshot</p>
-                </div>
-                {page !== 'Overview' && (
-                  <button
-                    className="secondary-button"
-                    onClick={() => setPage('Overview')}
-                  >
-                    Back to overview
-                  </button>
-                )}
-              </div>
-
               <div className="stats-grid">
-                <article className="stat-card">
-                  <div className="stat-top">
-                    <span className="stat-icon purple">▤</span>
-                    <span className="trend">Academic</span>
-                  </div>
-                  <p>Subjects enrolled</p>
-                  <div className="stat-value">04</div>
-                  <span className="stat-caption">Current semester</span>
-                </article>
-
-                <article className="stat-card">
+                <div className="stat-card">
                   <div className="stat-top">
                     <span className="stat-icon blue">↗</span>
                     <span className="trend">Grades</span>
                   </div>
                   <p>Average marks</p>
                   <div className="stat-value">
-                    84.3<span className="value-unit">/100</span>
+                    {averageMarks}
+                    <span className="value-unit">/100</span>
                   </div>
-                  <span className="stat-caption">Based on sample marks</span>
-                </article>
+                  <span className="stat-caption">
+                    Across {sampleGrades.length} subjects
+                  </span>
+                </div>
 
-                <article className="stat-card">
+                <div className="stat-card">
                   <div className="stat-top">
                     <span className="stat-icon green">✓</span>
                     <span className="trend">Attendance</span>
                   </div>
                   <p>Attendance rate</p>
                   <div className="stat-value">
-                    {attendancePercent}<span className="value-unit">%</span>
+                    {attendancePercent}
+                    <span className="value-unit">%</span>
                   </div>
                   <span className="stat-caption">
                     {totalAttended} of {totalClasses} classes attended
                   </span>
-                </article>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-top">
+                    <span className="stat-icon purple">▦</span>
+                    <span className="trend">Subjects</span>
+                  </div>
+                  <p>Enrolled subjects</p>
+                  <div className="stat-value">{sampleGrades.length}</div>
+                  <span className="stat-caption">Current semester</span>
+                </div>
               </div>
 
               {(page === 'Overview' || page === 'My Grades') && (
@@ -218,7 +352,8 @@ function App() {
                     </div>
                     <button
                       className="text-button"
-                      onClick={() => setPage('My Grades')}
+                      type="button"
+                      onClick={() => navigateTo('My Grades')}
                     >
                       View all →
                     </button>
@@ -228,21 +363,25 @@ function App() {
                     <table>
                       <thead>
                         <tr>
-                          <th>SUBJECT</th>
-                          <th>COURSE CODE</th>
-                          <th>MARKS</th>
-                          <th>LETTER GRADE</th>
+                          <th>Subject</th>
+                          <th>Course code</th>
+                          <th>Marks</th>
+                          <th>Grade</th>
                         </tr>
                       </thead>
                       <tbody>
                         {sampleGrades.map((item) => (
                           <tr key={item.code}>
-                            <td><strong>{item.subject}</strong></td>
+                            <td>
+                              <strong>{item.subject}</strong>
+                            </td>
                             <td className="muted-cell">{item.code}</td>
                             <td>
                               <div className="marks-cell">
                                 <div className="progress-track">
-                                  <span style={{ width: `${item.marks}%` }} />
+                                  <span
+                                    style={{ width: `${item.marks}%` }}
+                                  />
                                 </div>
                                 {item.marks}
                               </div>
@@ -273,7 +412,8 @@ function App() {
                     </div>
                     <button
                       className="text-button"
-                      onClick={() => setPage('My Attendance')}
+                      type="button"
+                      onClick={() => navigateTo('My Attendance')}
                     >
                       View all →
                     </button>
@@ -282,13 +422,16 @@ function App() {
                   <div className="attendance-list">
                     {sampleAttendance.map((item) => {
                       const percent = Math.round(
-                        item.attended / item.total * 100
+                        (item.attended / item.total) * 100
                       )
+
                       return (
                         <div className="attendance-row" key={item.subject}>
                           <div className="attendance-name">
                             <strong>{item.subject}</strong>
-                            <span>{item.attended}/{item.total} classes</span>
+                            <span>
+                              {item.attended}/{item.total} classes
+                            </span>
                           </div>
                           <div className="attendance-progress">
                             <div className="progress-track">
@@ -303,9 +446,38 @@ function App() {
                 </section>
               )}
             </>
+          ) : page === 'My Profile' && role === 'Student' ? (
+            <section className="panel role-panel">
+              <div className="role-panel-icon">○</div>
+              <h2>My Profile</h2>
+              <p>View your account information below.</p>
+
+              <div className="profile-details">
+                <div className="profile-detail-row">
+                  <span>Email address</span>
+                  <strong>{user.email}</strong>
+                </div>
+                <div className="profile-detail-row">
+                  <span>Role</span>
+                  <strong>{role}</strong>
+                </div>
+                <div className="profile-detail-row">
+                  <span>Account status</span>
+                  <strong>Signed in</strong>
+                </div>
+              </div>
+
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => navigateTo('Overview')}
+              >
+                Return to overview
+              </button>
+            </section>
           ) : (
             <section className="panel role-panel">
-              <div className="role-panel-icon">◫</div>
+              <div className="role-panel-icon">○</div>
               <h2>{page}</h2>
               <p>
                 This section is a UI preview for the {role} role. Role-specific
@@ -314,7 +486,8 @@ function App() {
               </p>
               <button
                 className="primary-button"
-                onClick={() => setPage('Overview')}
+                type="button"
+                onClick={() => navigateTo('Overview')}
               >
                 Return to overview
               </button>
