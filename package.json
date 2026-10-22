@@ -1,0 +1,10 @@
+{
+  "name": "student-record-system",
+  "version": "1.0.0",
+  "description": "Student Record System (EduTrack)",
+  "scripts": {
+    "test": "npm test --prefix backend",
+    "test:coverage": "npm run test:coverage --prefix backend",
+    "start": "npm start --prefix backend"
+  }
+}
