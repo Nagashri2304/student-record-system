@@ -6,6 +6,8 @@
 const express = require('express');
 const { verifyToken, authorizeRoles } = require('../middleware/roleAuth');
 const courseController = require('../controllers/courseController');
+const attendanceController = require('../controllers/attendanceController');
+const gradeController = require('../controllers/gradeController');
 
 const router = express.Router();
 
@@ -20,5 +22,16 @@ router.put('/:id', verifyToken, authorizeRoles('Admin'), courseController.update
 // Course enrollment & class roster (Admin and Faculty)
 router.post('/:id/enroll', verifyToken, authorizeRoles('Admin', 'Faculty'), courseController.enrollStudent);
 router.get('/:id/roster', verifyToken, authorizeRoles('Admin', 'Faculty'), courseController.getCourseRoster);
+
+// Daily Attendance Endpoints (FR-04, Issue #1 - Nagashri2304)
+router.post('/:id/attendance', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.markAttendance);
+router.get('/:id/attendance', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.getCourseAttendance);
+router.get('/:id/attendance/:sessionId', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.getAttendanceSession);
+router.put('/:id/attendance/:sessionId', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.updateAttendanceSession);
+
+// Subject Marks & Grading Endpoints (FR-05, Issue #2 - Nagashri2304)
+router.post('/:id/grades', verifyToken, authorizeRoles('Admin', 'Faculty'), gradeController.submitCourseGrades);
+router.get('/:id/grades', verifyToken, authorizeRoles('Admin', 'Faculty'), gradeController.getCourseGrades);
+router.get('/:id/grades/audit', verifyToken, authorizeRoles('Admin', 'Faculty'), gradeController.getGradingAuditLogs);
 
 module.exports = router;

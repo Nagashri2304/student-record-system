@@ -475,6 +475,148 @@ function App() {
                 Return to overview
               </button>
             </section>
+          ) : page === 'Attendance' ? (
+            <section className="panel">
+              <div className="panel-heading">
+                <div>
+                  <h3>Daily Attendance Marking (FR-04)</h3>
+                  <p>Log attendance for your assigned course session with 24-hour edit limit</p>
+                </div>
+                <span className="badge">Faculty Portal</span>
+              </div>
+
+              <div style={{ padding: '16px 0', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 600, color: '#475569', display: 'block' }}>Course</label>
+                    <select style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                      <option>CS101 - Data Structures and Algorithms (Sem 3)</option>
+                      <option>CS102 - Database Management Systems (Sem 4)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 600, color: '#475569', display: 'block' }}>Session Date</label>
+                    <input type="date" defaultValue={new Date().toISOString().split('T')[0]} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 600, color: '#475569', display: 'block' }}>Period</label>
+                    <input type="number" defaultValue={1} min={1} max={8} style={{ width: '80px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="table-wrapper">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>USN / Roll</th>
+                      <th>Student Name</th>
+                      <th>Attendance Status</th>
+                      <th>Session Participation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>USN2026CS001</strong></td>
+                      <td>Aarav Sharma</td>
+                      <td>
+                        <span className="badge" style={{ background: '#dcfce7', color: '#166534' }}>Present</span>
+                      </td>
+                      <td>Full lecture attendance recorded</td>
+                    </tr>
+                    <tr>
+                      <td><strong>USN2026CS002</strong></td>
+                      <td>Diya Patel</td>
+                      <td>
+                        <span className="badge" style={{ background: '#fef3c7', color: '#92400e' }}>Late</span>
+                      </td>
+                      <td>Joined 10 minutes late</td>
+                    </tr>
+                    <tr>
+                      <td><strong>USN2026CS003</strong></td>
+                      <td>Rohan Verma</td>
+                      <td>
+                        <span className="badge" style={{ background: '#fee2e2', color: '#991b1b' }}>Absent</span>
+                      </td>
+                      <td>Unexcused absence</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
+                <button className="primary-button" type="button" onClick={() => alert('Attendance session submitted successfully to /api/v1/courses/1/attendance')}>
+                  Submit Session Attendance (FR-04)
+                </button>
+                <button className="text-button" type="button" onClick={() => navigateTo('Overview')}>
+                  Cancel
+                </button>
+              </div>
+            </section>
+          ) : page === 'Enter Marks' ? (
+            <section className="panel">
+              <div className="panel-heading">
+                <div>
+                  <h3>Subject Marks Entry & GPA Evaluation (FR-05)</h3>
+                  <p>Submit continuous assessment and exam marks with automated Letter Grade (S-F) calculation</p>
+                </div>
+                <span className="badge">Faculty Portal</span>
+              </div>
+
+              <div style={{ padding: '16px 0', borderBottom: '1px solid #e2e8f0', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: 600, color: '#475569', display: 'block' }}>Course</label>
+                    <select style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                      <option>CS101 - Data Structures and Algorithms (4 Credits)</option>
+                      <option>CS102 - Database Management Systems (3 Credits)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="table-wrapper">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>USN / Roll</th>
+                      <th>Student Name</th>
+                      <th>Marks (0-100)</th>
+                      <th>Auto Letter Grade</th>
+                      <th>Grade Points</th>
+                      <th>Amendment Note</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>USN2026CS001</strong></td>
+                      <td>Aarav Sharma</td>
+                      <td><input type="number" defaultValue={92} min={0} max={100} style={{ width: '80px', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1' }} /></td>
+                      <td><span className="grade-badge grade-top">S</span></td>
+                      <td><strong>10 pts</strong></td>
+                      <td><input type="text" placeholder="Mandatory if amending" defaultValue="Final internal evaluation" style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1' }} /></td>
+                    </tr>
+                    <tr>
+                      <td><strong>USN2026CS002</strong></td>
+                      <td>Diya Patel</td>
+                      <td><input type="number" defaultValue={84} min={0} max={100} style={{ width: '80px', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1' }} /></td>
+                      <td><span className="grade-badge">A</span></td>
+                      <td><strong>9 pts</strong></td>
+                      <td><input type="text" placeholder="Mandatory if amending" defaultValue="Verified assessment score" style={{ width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #cbd5e1' }} /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
+                <button className="primary-button" type="button" onClick={() => alert('Marks submitted and audit log appended successfully to /api/v1/courses/1/grades')}>
+                  Submit Subject Marks & Audit Log (FR-05)
+                </button>
+                <button className="text-button" type="button" onClick={() => navigateTo('Overview')}>
+                  Cancel
+                </button>
+              </div>
+            </section>
           ) : (
             <section className="panel role-panel">
               <div className="role-panel-icon">○</div>
