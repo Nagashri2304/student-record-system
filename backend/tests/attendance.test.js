@@ -23,6 +23,12 @@ beforeAll(async () => {
   studentModel.seedMockStudents();
   courseModel.seedMockCourses();
   attendanceModel.seedMockAttendance();
+  await courseModel.enrollStudent({
+    student_id: 2,
+    course_id: 1,
+    semester: 3,
+    academic_year: '2025-2026',
+  });
 
   // Generate tokens
   const adminRes = await request(app).post('/api/v1/auth/login').send({
@@ -117,6 +123,50 @@ describe('FR-04: Daily Attendance Marking & Session Validation Engine Tests', ()
       expect(res.status).toBe(400);
       expect(res.body.success).toBe(false);
       expect(res.body.message).toMatch(/Invalid attendance status/);
+    });
+
+    it('accepts the SRS excused status while preserving late attendance', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses/1/attendance')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({ records: [{ student_id: 1, status: 'excused' }] });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data.records[0].status).toBe('excused');
+    });
+
+    it('rejects a student who is not enrolled in the selected course', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses/2/attendance')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({ records: [{ student_id: 2, status: 'present' }] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toMatch(/not enrolled/);
+    });
+
+    it('rejects a faculty member who is not assigned to the selected course', async () => {
+      const res = await request(app)
+        .post('/api/v1/courses/3/attendance')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({ records: [{ student_id: 1, status: 'present' }] });
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toMatch(/not assigned/);
+    });
+
+    it('rejects invalid dates and non-positive periods', async () => {
+      const invalidDate = await request(app)
+        .post('/api/v1/courses/1/attendance')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({ session_date: '2026-02-30', records: [{ student_id: 1, status: 'present' }] });
+      const invalidPeriod = await request(app)
+        .post('/api/v1/courses/1/attendance')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({ period: 0, records: [{ student_id: 1, status: 'present' }] });
+
+      expect(invalidDate.status).toBe(400);
+      expect(invalidPeriod.status).toBe(400);
     });
 
     it('TC-04.4: Reject attendance submission with duplicate student_id in same batch with HTTP 400', async () => {

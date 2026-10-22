@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS attendance_sessions (
     course_id BIGINT NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
     faculty_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
     session_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    period INT NOT NULL DEFAULT 1,
+    period INT NOT NULL DEFAULT 1 CHECK (period > 0),
     topic VARCHAR(255) DEFAULT 'Lecture Session',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -123,12 +123,17 @@ CREATE TABLE IF NOT EXISTS attendance_records (
     record_id BIGSERIAL PRIMARY KEY,
     session_id BIGINT NOT NULL REFERENCES attendance_sessions(session_id) ON DELETE CASCADE,
     student_id BIGINT NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('present', 'absent', 'late')),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('present', 'absent', 'late', 'excused')),
     remarks TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_session_student UNIQUE (session_id, student_id)
 );
+
+ALTER TABLE attendance_records DROP CONSTRAINT IF EXISTS attendance_records_status_check;
+ALTER TABLE attendance_records
+    ADD CONSTRAINT attendance_records_status_check
+    CHECK (status IN ('present', 'absent', 'late', 'excused'));
 
 CREATE INDEX IF NOT EXISTS idx_attendance_records_student ON attendance_records(student_id);
 
