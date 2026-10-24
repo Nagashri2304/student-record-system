@@ -237,15 +237,17 @@ const calculateSummary = (records) => {
   let present = 0;
   let absent = 0;
   let late = 0;
+  let excused = 0;
 
   for (const rec of records) {
     if (rec.status === 'present') present++;
     else if (rec.status === 'absent') absent++;
     else if (rec.status === 'late') late++;
+    else if (rec.status === 'excused') excused++;
   }
 
   const attendanceRate = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
-  return { total, present, absent, late, attendanceRate };
+  return { total, present, absent, late, excused, attendanceRate };
 };
 
 /**
@@ -362,7 +364,7 @@ const updateSession = async (sessionId, updates = {}, requestingUserId = null, r
       const normalizedStatus = (item.status || '').toLowerCase().trim();
 
       if (!VALID_STATUSES.includes(normalizedStatus)) {
-        throw new Error(`Invalid attendance status '${item.status}'. Allowed values: ${VALID_STATUSES.join(', ')}.`);
+        throw validationError(`Invalid attendance status '${item.status}'. Allowed values: ${VALID_STATUSES.join(', ')}.`);
       }
 
       // Update in memory records
@@ -425,6 +427,7 @@ const getStudentAttendanceSummary = async (studentId) => {
           present: 0,
           absent: 0,
           late: 0,
+          excused: 0,
         });
       }
 
@@ -440,6 +443,8 @@ const getStudentAttendanceSummary = async (studentId) => {
         totalOverallAttended += 1;
       } else if (rec.status === 'absent') {
         item.absent += 1;
+      } else if (rec.status === 'excused') {
+        item.excused += 1;
       }
     }
   }

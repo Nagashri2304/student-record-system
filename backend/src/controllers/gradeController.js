@@ -24,6 +24,12 @@ const submitCourseGrades = async (req, res) => {
     if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found.' });
     }
+    if (course.is_active === false) {
+      return res.status(409).json({ success: false, message: 'Grades cannot be recorded for an inactive course.' });
+    }
+    if (req.user.role === 'Faculty' && course.faculty_user_id !== null && Number(course.faculty_user_id) !== Number(req.user.user_id)) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to teach this course.' });
+    }
 
     const { grades } = req.body;
     if (!grades || !Array.isArray(grades) || grades.length === 0) {
@@ -31,6 +37,20 @@ const submitCourseGrades = async (req, res) => {
         success: false,
         message: 'Grade submission requires a non-empty grades array.',
       });
+    }
+
+    for (const item of grades) {
+      const studentId = Number(item?.student_id);
+      if (!Number.isSafeInteger(studentId) || studentId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid student_id provided in grade batch.' });
+      }
+      const student = await studentModel.findById(studentId);
+      if (!student) {
+        return res.status(404).json({ success: false, message: `Student with ID ${studentId} not found.` });
+      }
+      if (student.is_active === false) {
+        return res.status(409).json({ success: false, message: 'Grades cannot be recorded for an inactive student.' });
+      }
     }
 
     const recordedGrades = await gradeModel.submitGrades({

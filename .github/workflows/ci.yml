@@ -42,7 +42,7 @@ jobs:
       - name: Install backend dependencies
         run: npm ci --prefix backend
 
-      - name: Execute automated test suite (61 tests, 6 suites)
+      - name: Execute automated backend test suite
         run: npm test --prefix backend
 
   build-frontend:
