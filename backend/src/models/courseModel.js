@@ -413,7 +413,7 @@ const getCourseRoster = async (courseId) => {
   const cId = Number(courseId);
   if (db.pool) {
     const res = await db.query(
-      `SELECT e.enrollment_id, e.semester, e.academic_year, s.student_id, s.roll_number, s.first_name, s.last_name, s.email
+      `SELECT e.enrollment_id, e.semester, e.academic_year, s.student_id, s.roll_number, s.first_name, s.last_name, s.email, s.is_active
        FROM enrollments e
        JOIN students s ON e.student_id = s.student_id
        WHERE e.course_id = $1
@@ -438,6 +438,7 @@ const getCourseRoster = async (courseId) => {
           first_name: s.first_name,
           last_name: s.last_name,
           email: s.email,
+          is_active: s.is_active !== undefined ? s.is_active : true,
         });
       }
     }

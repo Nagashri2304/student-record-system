@@ -41,25 +41,23 @@ const markAttendance = async (req, res) => {
     }
 
     const roster = await courseModel.getCourseRoster(courseId);
-    const enrolledStudentIds = new Set(
+    const enrolledStudentsMap = new Map(
       roster
         .filter((student) => Number(student.semester) === Number(course.semester))
-        .map((student) => Number(student.student_id))
+        .map((student) => [Number(student.student_id), student])
     );
+
     for (const record of records) {
       const studentId = Number(record?.student_id);
       if (!Number.isSafeInteger(studentId) || studentId <= 0) {
         return res.status(400).json({ success: false, message: 'Invalid student_id provided in attendance batch.' });
       }
-      const student = await studentModel.findById(studentId);
-      if (!student) {
-        return res.status(404).json({ success: false, message: 'Student not found.' });
-      }
-      if (student.is_active === false) {
-        return res.status(409).json({ success: false, message: 'Attendance cannot be recorded for an inactive student.' });
-      }
-      if (!enrolledStudentIds.has(studentId)) {
+      const enrolledStudent = enrolledStudentsMap.get(studentId);
+      if (!enrolledStudent) {
         return res.status(400).json({ success: false, message: `Student ${studentId} is not enrolled in this course for the current semester.` });
+      }
+      if (enrolledStudent.is_active === false) {
+        return res.status(409).json({ success: false, message: 'Attendance cannot be recorded for an inactive student.' });
       }
     }
 
