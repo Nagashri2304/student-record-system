@@ -130,11 +130,6 @@ CREATE TABLE IF NOT EXISTS attendance_records (
     CONSTRAINT uq_session_student UNIQUE (session_id, student_id)
 );
 
-ALTER TABLE attendance_records DROP CONSTRAINT IF EXISTS attendance_records_status_check;
-ALTER TABLE attendance_records
-    ADD CONSTRAINT attendance_records_status_check
-    CHECK (status IN ('present', 'absent', 'late', 'excused'));
-
 CREATE INDEX IF NOT EXISTS idx_attendance_records_student ON attendance_records(student_id);
 
 -- 9. Subject Grades & Marks Evaluation Table (FR-05)
