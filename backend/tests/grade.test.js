@@ -129,6 +129,48 @@ describe('FR-05: Subject Marks Entry & Automatic GPA / Grade Evaluation Tests', 
 
       expect(resParent.status).toBe(403);
     });
+
+    it('TC-05.3b: Reject grade submission with duplicate student_id in the same batch with HTTP 400 Bad Request', async () => {
+      const resDuplicate = await request(app)
+        .post('/api/v1/courses/1/grades')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({
+          grades: [
+            { student_id: 1, marks: 85, note: 'First entry' },
+            { student_id: 1, marks: 90, note: 'Duplicate entry' },
+          ],
+        });
+
+      expect(resDuplicate.status).toBe(400);
+      expect(resDuplicate.body.message).toMatch(/Duplicate grade record/);
+    });
+
+    it('TC-05.3c: Reject grade submission for inactive course with HTTP 409 Conflict', async () => {
+      await courseModel.update(1, { is_active: false });
+
+      const resInactive = await request(app)
+        .post('/api/v1/courses/1/grades')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({ grades: [{ student_id: 1, marks: 88, note: 'Inactive test' }] });
+
+      await courseModel.update(1, { is_active: true });
+      expect(resInactive.status).toBe(409);
+      expect(resInactive.body.message).toMatch(/inactive course/);
+    });
+
+    it('TC-05.3d: Reject faculty submitting grades for course assigned to another instructor with HTTP 403', async () => {
+      const originalCourse = await courseModel.findById(1);
+      await courseModel.update(1, { faculty_user_id: 999 });
+
+      const resForbidden = await request(app)
+        .post('/api/v1/courses/1/grades')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({ grades: [{ student_id: 1, marks: 88, note: 'Unauthorized test' }] });
+
+      await courseModel.update(1, { faculty_user_id: originalCourse.faculty_user_id });
+      expect(resForbidden.status).toBe(403);
+      expect(resForbidden.body.message).toMatch(/not assigned/);
+    });
   });
 
   describe('2. Mandatory Explanation Note for Mark Amendments', () => {

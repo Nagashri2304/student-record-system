@@ -14,8 +14,38 @@ const inMemoryRecords = new Map();
 let nextSessionId = 1;
 let nextRecordId = 1;
 
-const VALID_STATUSES = ['present', 'absent', 'late'];
+const VALID_STATUSES = ['present', 'absent', 'late', 'excused'];
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
+const validationError = (message) => {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+};
+
+const parsePositiveInteger = (value, fieldName) => {
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+    throw validationError(`Invalid ${fieldName} provided.`);
+  }
+  return parsed;
+};
+
+const validateSessionDate = (value) => {
+  if (value === undefined || value === null || value === '') {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw validationError('Invalid session_date. Expected a valid date in YYYY-MM-DD format.');
+  }
+
+  const parsedDate = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== value) {
+    throw validationError('Invalid session_date. Expected a valid date in YYYY-MM-DD format.');
+  }
+  return value;
+};
 
 /**
  * Seed initial mock attendance sessions and records
@@ -78,15 +108,17 @@ const createSession = async ({
   topic = 'Lecture Session',
   records = [],
 }) => {
-  const numericCourseId = parseInt(course_id, 10);
-  const numericFacultyId = parseInt(faculty_user_id, 10);
+  const numericCourseId = parsePositiveInteger(course_id, 'course_id');
+  const numericFacultyId = parsePositiveInteger(faculty_user_id, 'faculty_user_id');
+  const normalizedDate = validateSessionDate(session_date);
+  const numericPeriod = period === undefined || period === null
+    ? 1
+    : parsePositiveInteger(period, 'period');
   const now = new Date().toISOString();
 
   // Validate records array
   if (!Array.isArray(records) || records.length === 0) {
-    const err = new Error('Attendance session must include at least one student attendance record.');
-    err.statusCode = 400;
-    throw err;
+    throw validationError('Attendance session must include at least one student attendance record.');
   }
 
   // Validate and sanitize records
@@ -94,24 +126,18 @@ const createSession = async ({
   const seenStudentIds = new Set();
 
   for (const item of records) {
-    const studentId = parseInt(item.student_id, 10);
-    if (isNaN(studentId) || studentId <= 0) {
-      const err = new Error('Invalid student_id provided in attendance batch.');
-      err.statusCode = 400;
-      throw err;
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      throw validationError('Each attendance record must be an object.');
     }
+    const studentId = parsePositiveInteger(item.student_id, 'student_id');
     if (seenStudentIds.has(studentId)) {
-      const err = new Error(`Duplicate attendance record for student_id ${studentId} in the same session.`);
-      err.statusCode = 400;
-      throw err;
+      throw validationError(`Duplicate attendance record for student_id ${studentId} in the same session.`);
     }
     seenStudentIds.add(studentId);
 
-    const normalizedStatus = (item.status || '').toLowerCase().trim();
+    const normalizedStatus = typeof item.status === 'string' ? item.status.toLowerCase().trim() : '';
     if (!VALID_STATUSES.includes(normalizedStatus)) {
-      const err = new Error(`Invalid attendance status '${item.status}'. Allowed values: ${VALID_STATUSES.join(', ')}.`);
-      err.statusCode = 400;
-      throw err;
+      throw validationError(`Invalid attendance status '${item.status}'. Allowed values: ${VALID_STATUSES.join(', ')}.`);
     }
 
     validatedRecords.push({
@@ -121,20 +147,22 @@ const createSession = async ({
     });
   }
 
-  // Database integration if available
+  // Persist the entire session as one unit; never report success after a partial database write.
   if (db.pool) {
+    const client = await db.pool.connect();
     try {
-      const sessionResult = await db.query(
+      await client.query('BEGIN');
+      const sessionResult = await client.query(
         `INSERT INTO attendance_sessions (course_id, faculty_user_id, session_date, period, topic, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, $6)
          RETURNING *`,
-        [numericCourseId, numericFacultyId, session_date || now.split('T')[0], period, topic, now]
+        [numericCourseId, numericFacultyId, normalizedDate, numericPeriod, topic || 'Lecture Session', now]
       );
       const session = sessionResult.rows[0];
 
       const createdRecords = [];
       for (const rec of validatedRecords) {
-        const recResult = await db.query(
+        const recResult = await client.query(
           `INSERT INTO attendance_records (session_id, student_id, status, remarks, created_at, updated_at)
            VALUES ($1, $2, $3, $4, $5, $5)
            RETURNING *`,
@@ -143,13 +171,24 @@ const createSession = async ({
         createdRecords.push(recResult.rows[0]);
       }
 
+      await client.query('COMMIT');
       return {
         ...session,
         records: createdRecords,
         summary: calculateSummary(createdRecords),
       };
     } catch (err) {
-      // Fall through to in-memory store
+      try {
+        await client.query('ROLLBACK');
+      } catch (rollbackError) {
+        // Preserve the original database error.
+      }
+      if (err.code === '23503') {
+        throw validationError('Course, faculty, or student record does not exist.');
+      }
+      throw err;
+    } finally {
+      client.release();
     }
   }
 
@@ -159,8 +198,8 @@ const createSession = async ({
     session_id: sessionId,
     course_id: numericCourseId,
     faculty_user_id: numericFacultyId,
-    session_date: session_date || now.split('T')[0],
-    period: parseInt(period, 10) || 1,
+    session_date: normalizedDate,
+    period: numericPeriod,
     topic: topic || 'Lecture Session',
     created_at: now,
     updated_at: now,
@@ -198,15 +237,17 @@ const calculateSummary = (records) => {
   let present = 0;
   let absent = 0;
   let late = 0;
+  let excused = 0;
 
   for (const rec of records) {
     if (rec.status === 'present') present++;
     else if (rec.status === 'absent') absent++;
     else if (rec.status === 'late') late++;
+    else if (rec.status === 'excused') excused++;
   }
 
   const attendanceRate = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
-  return { total, present, absent, late, attendanceRate };
+  return { total, present, absent, late, excused, attendanceRate };
 };
 
 /**
@@ -323,7 +364,7 @@ const updateSession = async (sessionId, updates = {}, requestingUserId = null, r
       const normalizedStatus = (item.status || '').toLowerCase().trim();
 
       if (!VALID_STATUSES.includes(normalizedStatus)) {
-        throw new Error(`Invalid attendance status '${item.status}'. Allowed values: ${VALID_STATUSES.join(', ')}.`);
+        throw validationError(`Invalid attendance status '${item.status}'. Allowed values: ${VALID_STATUSES.join(', ')}.`);
       }
 
       // Update in memory records
@@ -386,6 +427,7 @@ const getStudentAttendanceSummary = async (studentId) => {
           present: 0,
           absent: 0,
           late: 0,
+          excused: 0,
         });
       }
 
@@ -401,6 +443,8 @@ const getStudentAttendanceSummary = async (studentId) => {
         totalOverallAttended += 1;
       } else if (rec.status === 'absent') {
         item.absent += 1;
+      } else if (rec.status === 'excused') {
+        item.excused += 1;
       }
     }
   }

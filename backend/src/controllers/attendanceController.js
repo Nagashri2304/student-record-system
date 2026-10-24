@@ -24,6 +24,12 @@ const markAttendance = async (req, res) => {
     if (!course) {
       return res.status(404).json({ success: false, message: 'Course not found.' });
     }
+    if (course.is_active === false) {
+      return res.status(409).json({ success: false, message: 'Attendance cannot be recorded for an inactive course.' });
+    }
+    if (req.user.role === 'Faculty' && Number(course.faculty_user_id) !== Number(req.user.user_id)) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to teach this course.' });
+    }
 
     const { session_date, period, topic, records } = req.body;
 
@@ -32,6 +38,27 @@ const markAttendance = async (req, res) => {
         success: false,
         message: 'Attendance submission requires a non-empty records array.',
       });
+    }
+
+    const roster = await courseModel.getCourseRoster(courseId);
+    const enrolledStudentsMap = new Map(
+      roster
+        .filter((student) => Number(student.semester) === Number(course.semester))
+        .map((student) => [Number(student.student_id), student])
+    );
+
+    for (const record of records) {
+      const studentId = Number(record?.student_id);
+      if (!Number.isSafeInteger(studentId) || studentId <= 0) {
+        return res.status(400).json({ success: false, message: 'Invalid student_id provided in attendance batch.' });
+      }
+      const enrolledStudent = enrolledStudentsMap.get(studentId);
+      if (!enrolledStudent) {
+        return res.status(400).json({ success: false, message: `Student ${studentId} is not enrolled in this course for the current semester.` });
+      }
+      if (enrolledStudent.is_active === false) {
+        return res.status(409).json({ success: false, message: 'Attendance cannot be recorded for an inactive student.' });
+      }
     }
 
     const session = await attendanceModel.createSession({
@@ -49,10 +76,10 @@ const markAttendance = async (req, res) => {
       data: session,
     });
   } catch (error) {
-    const statusCode = error.statusCode || (error.message.includes('Invalid') ? 400 : 500);
+    const statusCode = error.statusCode || 500;
     return res.status(statusCode).json({
       success: false,
-      message: error.message,
+      message: error.statusCode ? error.message : 'Failed to record attendance.',
     });
   }
 };
