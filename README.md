@@ -196,7 +196,17 @@ These commands check the frontend code and create a production build.
 
 
 
-\## Collaboration
+\## Sprint 1 Working Product Demo Video
+
+As part of Sprint 1 deliverables (Item 2.g, 2.h / DEV-02), a 1-minute product demonstration showcasing operational progress is documented below:
+
+- **Demo Video Link**: [Sprint 1 Product Demonstration Video](https://drive.google.com/your-demo-video-link-here) *(Replace with your uploaded Google Drive / YouTube unlisted link)*
+- **Demonstrated Scenarios**:
+  1. **Multi-Role Authentication**: Verified sign-in for Student (`student1`), Faculty (`faculty1`), Admin (`admin`), and Parent (`parent1`).
+  2. **Faculty Operations**: Classroom attendance marking (`+ Present` / `- Absent`) and gradebook mark entry for enrolled courses.
+  3. **Student Portal**: Live CGPA badge, course transcript with letter grades, subject attendance tracking with 75% shortage alert, and official student profile records.
+
+## Collaboration
 
 
 

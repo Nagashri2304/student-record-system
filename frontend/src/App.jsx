@@ -1,42 +1,89 @@
-import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import DashboardLayout from './components/DashboardLayout'
+
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import StudentProfile from './pages/StudentProfile'
+import ChangePassword from './pages/ChangePassword'
+import GradesView from './pages/GradesView'
+import AttendanceView from './pages/AttendanceView'
+import CoursesView from './pages/CoursesView'
+import StudentsRosterView from './pages/StudentsRosterView'
+import FacultyDirectoryView from './pages/FacultyDirectoryView'
+import GrievancesView from './pages/GrievancesView'
+import ReportsView from './pages/ReportsView'
+
 import './App.css'
-import { api } from './api/client'
 
-function App() {
-  const [health, setHealth] = useState(null)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
+function RootRedirect() {
+  const { isAuthenticated, user } = useAuth()
 
-  useEffect(() => {
-    api.get('/health')
-      .then((result) => setHealth(result.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false))
-  }, [])
+  if (isAuthenticated && user?.role) {
+    return <Navigate to={`/${String(user.role).toLowerCase()}`} replace />
+  }
 
-  return (
-    <main style={{ maxWidth: '800px', margin: '80px auto', padding: '24px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Student Record System</h1>
-      <p>Manage student information through a centralized system.</p>
-
-      <section style={{ marginTop: '32px', padding: '24px', border: '1px solid #ccc', borderRadius: '12px' }}>
-        <h2>Backend Connection</h2>
-
-        {loading && <p>Checking backend connection...</p>}
-
-        {!loading && health && (
-          <div>
-            <p>API Status: <strong>{health.status}</strong></p>
-            <p>Service: {health.service}</p>
-          </div>
-        )}
-
-        {!loading && error && (
-          <p style={{ color: 'red' }}>Connection failed: {error}</p>
-        )}
-      </section>
-    </main>
-  )
+  return <Navigate to="/login" replace />
 }
 
-export default App
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Authentication Route */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+
+          {/* Root redirect */}
+          <Route path="/" element={<RootRedirect />} />
+
+          {/* Student Role Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['STUDENT']} />}>
+            <Route path="/student" element={<DashboardLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="grades" element={<GradesView />} />
+              <Route path="attendance" element={<AttendanceView />} />
+              <Route path="profile" element={<StudentProfile />} />
+              <Route path="grievances" element={<GrievancesView />} />
+            </Route>
+          </Route>
+
+          {/* Faculty Role Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['FACULTY']} />}>
+            <Route path="/faculty" element={<DashboardLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="courses" element={<CoursesView />} />
+              <Route path="attendance" element={<AttendanceView />} />
+              <Route path="grades" element={<GradesView />} />
+            </Route>
+          </Route>
+
+          {/* Admin Role Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+            <Route path="/admin" element={<DashboardLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="students" element={<StudentsRosterView />} />
+              <Route path="faculty" element={<FacultyDirectoryView />} />
+              <Route path="courses" element={<CoursesView />} />
+              <Route path="reports" element={<ReportsView />} />
+            </Route>
+          </Route>
+
+          {/* Parent Role Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['PARENT']} />}>
+            <Route path="/parent" element={<DashboardLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="grades" element={<GradesView />} />
+              <Route path="attendance" element={<AttendanceView />} />
+            </Route>
+          </Route>
+
+          {/* Fallback Catch-All */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
+}
