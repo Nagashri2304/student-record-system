@@ -215,3 +215,40 @@ CREATE TABLE IF NOT EXISTS grievances (
 CREATE INDEX IF NOT EXISTS idx_grievances_student ON grievances(student_id);
 CREATE INDEX IF NOT EXISTS idx_grievances_course ON grievances(course_id);
 CREATE INDEX IF NOT EXISTS idx_grievances_status ON grievances(status);
+ feat/nfr01-indexing-query-optimization
+
+
+-- ============================================================================
+-- Sprint 2: NFR-01 Performance Optimization & Composite B-Tree Indices
+-- Requirement: SRS NFR-01 (API Response < 200ms, Grade Report < 1.0s)
+-- Issue: #19 [SP-3] NFR-01: Database Indexing, Query Optimization & Performance
+-- Author: Kushitha K (@Kushitha30)
+-- ============================================================================
+
+-- 1. Composite Covering Index on Attendance Records for Fast Cumulative Rollup & Threshold Alerts
+CREATE INDEX IF NOT EXISTS idx_attendance_records_composite ON attendance_records(session_id, student_id, status);
+CREATE INDEX IF NOT EXISTS idx_attendance_records_student_status ON attendance_records(student_id, status);
+
+-- 2. Composite Index on Attendance Sessions for Semester/Date Range & Course Batch Filtering
+CREATE INDEX IF NOT EXISTS idx_attendance_sessions_composite ON attendance_sessions(course_id, session_date, period);
+CREATE INDEX IF NOT EXISTS idx_attendance_sessions_course_date ON attendance_sessions(course_id, session_date DESC);
+
+-- 3. Composite Index on Course Enrollments for Quick Student Roster & Semester Course Lookups
+CREATE INDEX IF NOT EXISTS idx_enrollments_student_semester ON enrollments(student_id, semester);
+CREATE INDEX IF NOT EXISTS idx_enrollments_course_semester ON enrollments(course_id, semester);
+
+-- 4. Composite Covering Index on Grades for Fast GPA and SGPA Aggregation Queries
+CREATE INDEX IF NOT EXISTS idx_grades_composite ON grades(course_id, student_id, marks);
+CREATE INDEX IF NOT EXISTS idx_grades_student_marks ON grades(student_id, marks, letter_grade);
+
+-- 5. Composite Index on Grievances for Fast Status Filtering and SLA Tracking
+CREATE INDEX IF NOT EXISTS idx_grievances_student_status ON grievances(student_id, status);
+CREATE INDEX IF NOT EXISTS idx_grievances_course_status ON grievances(course_id, status);
+
+-- 6. Index on Students Department and Active Status for Large Directory Queries
+CREATE INDEX IF NOT EXISTS idx_students_dept_active ON students(dept_id, is_active);
+
+-- 7. Index on Courses Department and Active Status
+CREATE INDEX IF NOT EXISTS idx_courses_dept_active ON courses(dept_id, is_active);
+=======
+ main
