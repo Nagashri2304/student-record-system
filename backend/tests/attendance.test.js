@@ -299,4 +299,16 @@ describe('FR-04: Daily Attendance Marking & Session Validation Engine Tests', ()
       expect(res.body.message).toMatch(/Access denied/);
     });
   });
+
+  describe('4. FR-07: Attendance Percentage Engine & Low Attendance Alert (<75%) System (#4)', () => {
+    it('TC-04.11: Computes (Present + Late) / Total * 100 and flags shortage below 75%', async () => {
+      const res = await request(app).get('/api/v1/students/1/attendance').set('Authorization', `Bearer ${student1Token}`);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      const summary = res.body.data;
+      expect(typeof summary.overallPercentage).toBe('number');
+      expect(typeof summary.isShortage).toBe('boolean');
+      expect(summary.isShortage).toBe(summary.overallPercentage < 75);
+    });
+  });
 });

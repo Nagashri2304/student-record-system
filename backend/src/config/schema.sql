@@ -215,3 +215,10 @@ CREATE TABLE IF NOT EXISTS grievances (
 CREATE INDEX IF NOT EXISTS idx_grievances_student ON grievances(student_id);
 CREATE INDEX IF NOT EXISTS idx_grievances_course ON grievances(course_id);
 CREATE INDEX IF NOT EXISTS idx_grievances_status ON grievances(status);
+
+
+-- 12. Relational Indexes & Query Optimization (NFR-01, NFR-03, TC-10)
+-- Author: Kushitha K (@Kushitha30)
+CREATE INDEX IF NOT EXISTS idx_attendance_records_composite ON attendance_records(session_id, student_id, status);
+CREATE INDEX IF NOT EXISTS idx_grades_composite ON grades(course_id, student_id, marks);
+CREATE INDEX IF NOT EXISTS idx_attendance_sessions_composite ON attendance_sessions(course_id, session_date, period);
