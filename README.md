@@ -196,15 +196,33 @@ These commands check the frontend code and create a production build.
 
 
 
-\## Sprint 1 Working Product Demo Video
+\## Product Demonstration Videos & Release Deliverables
 
-As part of Sprint 1 deliverables (Item 2.g, 2.h / DEV-02), a 1-minute product demonstration showcasing operational progress is documented below:
+### 1. Sprint 1 Working Product Demo Video (DEV-02 / Issue #13)
+As part of Sprint 1 deliverables (Item 2.g, 2.h / DEV-02), a 1-minute product demonstration showcasing operational progress across all core user roles:
+- **Demo Video Link**: [Sprint 1 Product Demonstration Video](https://drive.google.com/your-demo-video-link-here) *(Google Drive / YouTube Unlisted Link)*
+- **Acceptance Criteria Verification**:
+  - [x] Multi-Role Authentication: Verified login for Admin (`admin@edutrack.edu`), Faculty (`faculty@edutrack.edu`), Student (`student@edutrack.edu`), and Parent (`parent@edutrack.edu`).
+  - [x] Faculty Workflow: Classroom attendance recording (`+ Present` / `- Absent`) with 24h edit window, and subject gradebook mark entry.
+  - [x] Student Self-Service: Live CGPA badge, course transcript breakdown, and subject attendance metrics.
+  - [x] Video link & walkthrough documented in repository.
 
-- **Demo Video Link**: [Sprint 1 Product Demonstration Video](https://drive.google.com/your-demo-video-link-here) *(Replace with your uploaded Google Drive / YouTube unlisted link)*
-- **Demonstrated Scenarios**:
-  1. **Multi-Role Authentication**: Verified sign-in for Student (`student1`), Faculty (`faculty1`), Admin (`admin`), and Parent (`parent1`).
-  2. **Faculty Operations**: Classroom attendance marking (`+ Present` / `- Absent`) and gradebook mark entry for enrolled courses.
-  3. **Student Portal**: Live CGPA badge, course transcript with letter grades, subject attendance tracking with 75% shortage alert, and official student profile records.
+### 2. Sprint 2 Working Product Demo & Release Freeze (DEV-05 / Issue #6)
+As part of Sprint 2 deliverables (Item 3.a, 3.b, 3.c, 3.d / DEV-05), a comprehensive walkthrough of advanced capabilities, security hardening, and final release tagging:
+- **Final Demo Video Link**: [Sprint 2 Final Demonstration Video](https://drive.google.com/your-final-demo-video-link-here) *(Google Drive / YouTube Unlisted Link)*
+- **Acceptance Criteria Verification**:
+  - [x] FR-08 PDF Report Card: Official downloadable semester grade card with institutional branding, SGPA badge, and attendance % compiled in <75ms.
+  - [x] FR-09 Parent Oversight Portal: Zero-trust child tracking, attendance analytics, and dynamic <75% attendance warning alert.
+  - [x] FR-10 Grievance Resolution Desk: Academic discrepancy submission and faculty resolution workflow.
+  - [x] SEC-02 & SEC-03: Global input sanitization, parameterized query defense, and immutable audit logging.
+  - [x] Release Freeze: Code changes locked, test suite passing 100%, tagged as Git release `v1.0.0`.
+
+## IEEE Documentation Deliverables
+The project includes formal engineering documentation compliant with IEEE standards located in `docs/`:
+- **Software Requirements Specification (SRS)**: `docs/1_SRS_StudentRecordSystem.docx` (IEEE Std 830-1998)
+- **Software Test Plan & Verification (STP)**: `docs/2_TestPlan_StudentRecordSystem.docx` (IEEE Std 829-2008)
+- **Software Architecture Design (SAD)**: `docs/3_ArchitectureDesign_StudentRecordSystem.md` (IEEE Std 1016-2009)
+- **System Architecture & Use Case Diagrams**: `docs/use_case_diagram.png`
 
 ## Collaboration
 
