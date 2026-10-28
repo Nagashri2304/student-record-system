@@ -217,6 +217,11 @@ As part of Sprint 2 deliverables (Item 3.a, 3.b, 3.c, 3.d / DEV-05), a comprehen
   - [x] SEC-02 & SEC-03: Global input sanitization, parameterized query defense, and immutable audit logging.
   - [x] Release Freeze: Code changes locked, test suite passing 100%, tagged as Git release `v1.0.0`.
 
+### 3. Sprint 2 Engineering Traceability & Modules (FR-08, FR-09, DEV-02)
+- **Module FR-08 (Semester Grade Card PDF Export)**: Implemented by @nidhilokesh1 (`backend/src/controllers/reportCardController.js`, `backend/tests/reportCard.test.js`).
+- **Module FR-09 (Parent Oversight Portal)**: Implemented by @nidhilokesh1 (`backend/src/controllers/parentController.js`, `backend/src/routes/parentRoutes.js`, `backend/tests/parent.test.js`).
+- **Module DEV-02 (Sprint 1 Product Demonstration)**: Documented and verified by @nidhilokesh1.
+
 ## IEEE Documentation Deliverables
 The project includes formal engineering documentation compliant with IEEE standards located in `docs/`:
 - **Software Requirements Specification (SRS)**: `docs/1_SRS_StudentRecordSystem.docx` (IEEE Std 830-1998)
