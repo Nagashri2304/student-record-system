@@ -153,23 +153,46 @@ CREATE INDEX IF NOT EXISTS idx_grades_student ON grades(student_id);
 CREATE INDEX IF NOT EXISTS idx_grades_course ON grades(course_id);
 
 -- 10. Immutable Security Audit Trail Table (FR-05, FR-07, SEC-03)
--- Author: Nagashree R Patil (@Nagashri2304)
+-- Authors: Nagashree R Patil (@Nagashri2304), Monika PM (@Monikapm19)
 CREATE TABLE IF NOT EXISTS audit_logs (
     audit_id BIGSERIAL PRIMARY KEY,
+    actor_user_id BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
     action VARCHAR(50) NOT NULL,
+    entity_type VARCHAR(50) DEFAULT 'grade',
+    entity_id BIGINT,
     course_id BIGINT REFERENCES courses(course_id) ON DELETE SET NULL,
     student_id BIGINT REFERENCES students(student_id) ON DELETE SET NULL,
+    old_value JSONB,
+    new_value JSONB,
     old_marks NUMERIC(5, 2),
     new_marks NUMERIC(5, 2),
     letter_grade VARCHAR(5),
     note TEXT,
-    actor_user_id BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    ip_address INET DEFAULT '127.0.0.1',
     timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_logs_course ON audit_logs(course_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_student ON audit_logs(student_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+
+-- Enforce database-level immutability: Revoke UPDATE and DELETE on audit_logs (SEC-03)
+REVOKE UPDATE, DELETE ON audit_logs FROM PUBLIC;
+
+-- Immutability Trigger preventing any modification or deletion of audit records
+CREATE OR REPLACE FUNCTION prevent_audit_log_mutation()
+RETURNS TRIGGER AS $
+BEGIN
+    RAISE EXCEPTION 'Security Policy Violation: audit_logs is append-only and immutable. UPDATE and DELETE operations are strictly prohibited.';
+END;
+$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_prevent_audit_mutation ON audit_logs;
+CREATE TRIGGER trg_prevent_audit_mutation
+BEFORE UPDATE OR DELETE ON audit_logs
+FOR EACH ROW EXECUTE FUNCTION prevent_audit_log_mutation();
 
 
 -- 11. Academic Discrepancy & Grievance Resolution Table (FR-10, FR-15)
