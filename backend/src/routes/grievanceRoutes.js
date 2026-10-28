@@ -1,29 +1,24 @@
-const express = require("express");
-const { successResponse } = require("../utils/response");
-
+/**
+ * Grievance Resolution Workflow Routes
+ * Requirement: SRS FR-10, FR-15; Architecture Component C9 (Grievance Service)
+ * Issue: #16 [SP-3] FR-10: Academic Discrepancy & Grade Grievance Resolution Workflow
+ * Author: Kushitha K (@Kushitha30)
+ */
+const express = require('express');
 const router = express.Router();
+const grievanceController = require('../controllers/grievanceController');
+const { verifyToken, authorizeRoles } = require('../middleware/roleAuth');
 
-let grievances = [
-  { id: 1, student: "Aarav Sharma", category: "Grading Discrepancy", description: "Requesting review of Quiz 2 marks in CS301.", status: "In Review", raisedAt: "2026-10-22" },
-  { id: 2, student: "Diya Rao", category: "Attendance Correction", description: "Attended lab on Oct 18 but marked absent due to scanner error.", status: "Resolved", raisedAt: "2026-10-19" },
-];
+// POST /api/v1/grievances - Students create ticket in Open state; Admins can also create
+router.post('/', verifyToken, authorizeRoles('Student', 'Admin'), grievanceController.createGrievance);
 
-router.get("/", (req, res) => {
-  return successResponse(res, grievances, "Grievances retrieved.");
-});
+// GET /api/v1/grievances - List grievances (filtered by role)
+router.get('/', verifyToken, authorizeRoles('Student', 'Faculty', 'Admin'), grievanceController.listGrievances);
 
-router.post("/", (req, res) => {
-  const { category, description } = req.body;
-  const newG = {
-    id: grievances.length + 1,
-    student: "Aarav Sharma",
-    category: category || "General",
-    description: description || "No description provided",
-    status: "Open",
-    raisedAt: new Date().toISOString().split("T")[0],
-  };
-  grievances.unshift(newG);
-  return successResponse(res, newG, "Grievance submitted successfully.", 201);
-});
+// GET /api/v1/grievances/:id - View grievance details and resolution notes (with IDOR protection)
+router.get('/:id', verifyToken, grievanceController.getGrievanceById);
+
+// PATCH /api/v1/grievances/:id - Update status (e.g. to Resolved) & resolution notes by assigned faculty or admin
+router.patch('/:id', verifyToken, authorizeRoles('Faculty', 'Admin'), grievanceController.updateGrievance);
 
 module.exports = router;
