@@ -170,3 +170,25 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_logs_course ON audit_logs(course_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_student ON audit_logs(student_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_user_id);
+
+
+-- 11. Academic Discrepancy & Grievance Resolution Table (FR-10, FR-15)
+-- Author: Kushitha K (@Kushitha30)
+CREATE TABLE IF NOT EXISTS grievances (
+    grievance_id BIGSERIAL PRIMARY KEY,
+    student_id BIGINT NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
+    course_id BIGINT NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
+    grievance_type VARCHAR(50) NOT NULL DEFAULT 'grade' CHECK (grievance_type IN ('grade', 'attendance')),
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'Open' CHECK (status IN ('Open', 'In Review', 'Resolved')),
+    resolution_notes TEXT,
+    resolved_by BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMPTZ DEFAULT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_grievances_student ON grievances(student_id);
+CREATE INDEX IF NOT EXISTS idx_grievances_course ON grievances(course_id);
+CREATE INDEX IF NOT EXISTS idx_grievances_status ON grievances(status);
