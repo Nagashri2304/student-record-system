@@ -19,6 +19,8 @@ export default function GradesView() {
   const [studentRoll, setStudentRoll] = useState('SR001')
   const [enteredMarks, setEnteredMarks] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+  const [downloading, setDownloading] = useState(false)
+  const [downloadMsg, setDownloadMsg] = useState('')
 
   useEffect(() => {
     api.get('/grades')
@@ -29,6 +31,42 @@ export default function GradesView() {
       })
       .catch(() => {})
   }, [])
+
+  async function handleDownloadGradeCard() {
+    try {
+      setDownloading(true)
+      setDownloadMsg('')
+      // Default to student 1 or look up linked child / user
+      let targetId = 1
+      if (role === 'STUDENT') {
+        try {
+          const profile = await api.get('/students/me')
+          if (profile?.data?.student_id || profile?.data?.id) {
+            targetId = profile.data.student_id || profile.data.id
+          }
+        } catch {
+          // ignore fallback
+        }
+      } else if (role === 'PARENT') {
+        try {
+          const overview = await api.get('/parent/overview')
+          if (overview?.data?.student?.id) {
+            targetId = overview.data.student.id
+          }
+        } catch {
+          // ignore fallback
+        }
+      }
+
+      await api.downloadBlob(`/students/${targetId}/report-card`, `Semester_GradeCard_Student_${targetId}.pdf`)
+      setDownloadMsg('Official Grade Card PDF downloaded successfully!')
+      setTimeout(() => setDownloadMsg(''), 5000)
+    } catch (err) {
+      setDownloadMsg(`Error downloading PDF: ${err.message || 'Server error'}`)
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   function handleAddGrade(e) {
     e.preventDefault()
@@ -69,10 +107,43 @@ export default function GradesView() {
 
   return (
     <div className="view-container">
-      <div className="view-intro">
-        <h2>{role === 'FACULTY' ? 'Gradebook & Assessment Entry' : 'Academic Grades & Performance'}</h2>
-        <p>Comprehensive transcript breakdown and semester evaluation records.</p>
+      <div className="view-intro" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <h2>{role === 'FACULTY' ? 'Gradebook & Assessment Entry' : 'Academic Grades & Performance'}</h2>
+          <p>Comprehensive transcript breakdown and semester evaluation records.</p>
+        </div>
+
+        {/* FR-08: Grade Card Generation & PDF Export Service button */}
+        {(role === 'STUDENT' || role === 'PARENT' || role === 'ADMIN') && (
+          <button
+            type="button"
+            className="primary-pill-btn"
+            onClick={handleDownloadGradeCard}
+            disabled={downloading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 18px',
+              backgroundColor: '#4f46e5',
+              color: '#ffffff',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: downloading ? 'not-allowed' : 'pointer',
+              fontWeight: '600',
+              boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
+            }}
+          >
+            <span>{downloading ? '⏳ Compiling PDF...' : '📄 Download Official Grade Card (PDF)'}</span>
+          </button>
+        )}
       </div>
+
+      {downloadMsg && (
+        <div className={downloadMsg.startsWith('Error') ? 'error-banner' : 'success-banner'} style={{ marginBottom: '16px' }}>
+          {downloadMsg}
+        </div>
+      )}
 
       <div className="metrics-grid">
         <div className="metric-card">
@@ -166,4 +237,3 @@ export default function GradesView() {
     </div>
   )
 }
-

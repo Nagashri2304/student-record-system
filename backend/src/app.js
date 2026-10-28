@@ -1,6 +1,6 @@
 /**
  * Express Application Configuration
- * Author: Monika PM (@Monikapm19), Kushitha K (@Kushitha30)
+ * Author: Monika PM (@Monikapm19), Kushitha K (@Kushitha30), Nidhi L (@nidhilokesh1)
  */
 const express = require('express');
 const cors = require('cors');
@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const grievanceRoutes = require('./routes/grievanceRoutes');
+const parentRoutes = require('./routes/parentRoutes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/students', studentRoutes);
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/grievances', grievanceRoutes);
+app.use('/api/v1/parent', parentRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
