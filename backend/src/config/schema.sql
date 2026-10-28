@@ -215,6 +215,7 @@ CREATE TABLE IF NOT EXISTS grievances (
 CREATE INDEX IF NOT EXISTS idx_grievances_student ON grievances(student_id);
 CREATE INDEX IF NOT EXISTS idx_grievances_course ON grievances(course_id);
 CREATE INDEX IF NOT EXISTS idx_grievances_status ON grievances(status);
+ feat/nfr01-indexing-query-optimization
 
 
 -- ============================================================================
@@ -249,3 +250,5 @@ CREATE INDEX IF NOT EXISTS idx_students_dept_active ON students(dept_id, is_acti
 
 -- 7. Index on Courses Department and Active Status
 CREATE INDEX IF NOT EXISTS idx_courses_dept_active ON courses(dept_id, is_active);
+=======
+ main

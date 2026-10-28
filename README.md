@@ -196,9 +196,9 @@ These commands check the frontend code and create a production build.
 
 
 
-\## Product Demonstration Videos & Release Deliverables
+\## Product Demonstration Videos & Sprint Deliverables
 
-### 1. Sprint 1 Working Product Demo Video (DEV-02 / Issue #13)
+### Sprint 1 Working Product Demo Video (DEV-02 / Issue #13)
 As part of Sprint 1 deliverables (Item 2.g, 2.h / DEV-02), a 1-minute product demonstration showcasing operational progress across all core user roles:
 - **Demo Video Link**: [Sprint 1 Product Demonstration Video](https://drive.google.com/your-demo-video-link-here) *(Google Drive / YouTube Unlisted Link)*
 - **Acceptance Criteria Verification**:
@@ -207,20 +207,9 @@ As part of Sprint 1 deliverables (Item 2.g, 2.h / DEV-02), a 1-minute product de
   - [x] Student Self-Service: Live CGPA badge, course transcript breakdown, and subject attendance metrics.
   - [x] Video link & walkthrough documented in repository.
 
-### 2. Sprint 2 Working Product Demo & Release Freeze (DEV-05 / Issue #6)
-As part of Sprint 2 deliverables (Item 3.a, 3.b, 3.c, 3.d / DEV-05), a comprehensive walkthrough of advanced capabilities, security hardening, and final release tagging:
-- **Final Demo Video Link**: [Sprint 2 Final Demonstration Video](https://drive.google.com/your-final-demo-video-link-here) *(Google Drive / YouTube Unlisted Link)*
-- **Acceptance Criteria Verification**:
-  - [x] FR-08 PDF Report Card: Official downloadable semester grade card with institutional branding, SGPA badge, and attendance % compiled in <75ms.
-  - [x] FR-09 Parent Oversight Portal: Zero-trust child tracking, attendance analytics, and dynamic <75% attendance warning alert.
-  - [x] FR-10 Grievance Resolution Desk: Academic discrepancy submission and faculty resolution workflow.
-  - [x] SEC-02 & SEC-03: Global input sanitization, parameterized query defense, and immutable audit logging.
-  - [x] Release Freeze: Code changes locked, test suite passing 100%, tagged as Git release `v1.0.0`.
-
-### 3. Sprint 2 Engineering Traceability & Modules (FR-08, FR-09, DEV-02)
+### Sprint 2 Modules (FR-08, FR-09) - Assigned to @nidhilokesh1
 - **Module FR-08 (Semester Grade Card PDF Export)**: Implemented by @nidhilokesh1 (`backend/src/controllers/reportCardController.js`, `backend/tests/reportCard.test.js`).
 - **Module FR-09 (Parent Oversight Portal)**: Implemented by @nidhilokesh1 (`backend/src/controllers/parentController.js`, `backend/src/routes/parentRoutes.js`, `backend/tests/parent.test.js`).
-- **Module DEV-02 (Sprint 1 Product Demonstration)**: Documented and verified by @nidhilokesh1.
 
 ## IEEE Documentation Deliverables
 The project includes formal engineering documentation compliant with IEEE standards located in `docs/`:
