@@ -1,6 +1,6 @@
 /**
  * Express Application Configuration
- * Authors: Monika PM (@Monikapm19), Kushitha K (@Kushitha30), Nagashree R Patil (@Nagashri2304)
+ * Authors: Monika PM (@Monikapm19), Kushitha K (@Kushitha30), Nidhi L (@nidhilokesh1), Nagashree R Patil (@Nagashri2304)
  */
 const express = require('express');
 const cors = require('cors');
@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const grievanceRoutes = require('./routes/grievanceRoutes');
+const parentRoutes = require('./routes/parentRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
@@ -24,7 +25,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/students', studentRoutes);
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/grievances', grievanceRoutes);
-// Immutable Security Audit Trail routes (SEC-03, TC-09)
+app.use('/api/v1/parent', parentRoutes);
 app.use('/api/v1/audit-logs', auditRoutes);
 app.use('/api/v1/audit/logs', auditRoutes);
 

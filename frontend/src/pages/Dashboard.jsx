@@ -220,17 +220,56 @@ export default function Dashboard() {
   }
 
   if (role === 'parent') {
+    const parentData = stats?.data || stats || {}
+    const child = parentData?.student || {}
+    const attendance = parentData?.attendance || {}
+    const grades = parentData?.grades || {}
+    const attendancePct = attendance?.overallPercentage !== undefined ? attendance.overallPercentage : 92
+    const isLowAttendance = parentData?.lowAttendanceAlert || attendancePct < 75
+
     return (
       <div className="role-dashboard">
+        {/* FR-09: Low Attendance Alert Banner (<75%) */}
+        {isLowAttendance && (
+          <div
+            className="alert-banner warning"
+            style={{
+              backgroundColor: '#fef2f2',
+              border: '1px solid #ef4444',
+              borderRadius: '8px',
+              padding: '16px 20px',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              color: '#991b1b',
+            }}
+          >
+            <span style={{ fontSize: '26px' }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <strong style={{ display: 'block', fontSize: '16px', color: '#b91c1c' }}>
+                Low Attendance Alert: Below 75% Regulatory Threshold
+              </strong>
+              <span style={{ fontSize: '14px', color: '#7f1d1d' }}>
+                Your child's attendance ({attendancePct}%) has dropped below the minimum mandatory requirement. Please contact the academic advisor immediately.
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="student-hero-banner">
-          <div className="student-hero-avatar">A</div>
+          <div className="student-hero-avatar">
+            {(child.name || 'A').charAt(0).toUpperCase()}
+          </div>
           <div className="student-hero-info">
-            <h2>Aarav Sharma</h2>
-            <p>Roll No: SR001 · Computer Science and Engineering · Semester 3 (2026–2027)</p>
+            <h2>{child.name || 'Aarav Sharma'} (Linked Student)</h2>
+            <p>
+              Roll No: {child.roll_no || 'USN2026CS001'} · {child.department || 'Computer Science and Engineering'} · Semester {child.semester || 3}
+            </p>
           </div>
           <div className="cgpa-pill">
             <small>CURRENT CGPA</small>
-            <strong>8.85 / 10</strong>
+            <strong>{grades.sgpa || '8.85'} / 10</strong>
           </div>
         </div>
 
@@ -240,8 +279,12 @@ export default function Dashboard() {
               <span className="metric-label">OVERALL ATTENDANCE</span>
               <span className="metric-icon">◷</span>
             </div>
-            <strong className="metric-value">92%</strong>
-            <span className="metric-trend positive">Eligible for examinations</span>
+            <strong className="metric-value" style={{ color: attendancePct >= 75 ? '#16a34a' : '#dc2626' }}>
+              {attendancePct}%
+            </strong>
+            <span className={`metric-trend ${attendancePct >= 75 ? 'positive' : 'negative'}`}>
+              {attendancePct >= 75 ? 'Eligible for examinations' : '⚠️ Shortage warning (<75%)'}
+            </span>
           </div>
 
           <div className="metric-card">
@@ -249,8 +292,8 @@ export default function Dashboard() {
               <span className="metric-label">ENROLLED COURSES</span>
               <span className="metric-icon">📚</span>
             </div>
-            <strong className="metric-value">5 Subjects</strong>
-            <span className="metric-trend neutral">Semester 3 Core</span>
+            <strong className="metric-value">{grades.coursesCount || 5} Subjects</strong>
+            <span className="metric-trend neutral">Semester {child.semester || 3} Core</span>
           </div>
 
           <div className="metric-card">
@@ -275,38 +318,39 @@ export default function Dashboard() {
         <div className="dashboard-grid-2">
           <section className="portal-card">
             <div className="portal-card-header">
-              <h3>Upcoming Mid-Term Assessments</h3>
+              <h3>Child's Coursework & Grades Summary</h3>
             </div>
-            <div className="exam-schedule-list">
-              <div className="exam-item">
-                <div className="exam-date">
-                  <strong>12</strong>
-                  <span>NOV</span>
+            <div className="quick-actions-list">
+              <div style={{ padding: '12px 16px', background: '#f8fafc', borderRadius: '6px', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <strong>CS301 - Database Management Systems</strong>
+                  <span className="grade-badge" style={{ padding: '2px 8px', borderRadius: '4px', background: '#dbeafe', color: '#1e40af', fontWeight: 'bold' }}>Grade A+ (91%)</span>
                 </div>
-                <div className="exam-details">
-                  <strong>Database Management Systems</strong>
-                  <p>Mid-Term II · 10:00 AM – 12:00 PM · LH-201</p>
-                </div>
+                <small style={{ color: '#64748b' }}>Attendance: 93% (28 / 30 sessions)</small>
               </div>
-
-              <div className="exam-item">
-                <div className="exam-date">
-                  <strong>15</strong>
-                  <span>NOV</span>
+              <div style={{ padding: '12px 16px', background: '#f8fafc', borderRadius: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <strong>CS302 - Software Engineering</strong>
+                  <span className="grade-badge" style={{ padding: '2px 8px', borderRadius: '4px', background: '#dbeafe', color: '#1e40af', fontWeight: 'bold' }}>Grade A (84%)</span>
                 </div>
-                <div className="exam-details">
-                  <strong>Software Engineering</strong>
-                  <p>Mid-Term II · 02:00 PM – 04:00 PM · LH-202</p>
-                </div>
+                <small style={{ color: '#64748b' }}>Attendance: 92% (26 / 28 sessions)</small>
               </div>
             </div>
           </section>
 
           <section className="portal-card">
             <div className="portal-card-header">
-              <h3>Parent Actions</h3>
+              <h3>Parent Actions & Reports</h3>
             </div>
             <div className="quick-actions-list">
+              <button
+                className="action-button"
+                style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
+                onClick={() => api.downloadBlob(`/students/${child.id || 1}/report-card`, `GradeCard_${child.name || 'Student'}.pdf`)}
+              >
+                <span>📄 Download Child's Official Grade Card (PDF)</span>
+                <span className="arrow">⬇</span>
+              </button>
               <button className="action-button" onClick={() => navigate('/parent/grades')}>
                 <span>▤ View Detailed Grade Breakdown</span>
                 <span className="arrow">→</span>
@@ -385,6 +429,14 @@ export default function Dashboard() {
             <h3>Quick Student Portal Navigation</h3>
           </div>
           <div className="quick-actions-list">
+            <button
+              className="action-button"
+              style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
+              onClick={() => api.downloadBlob('/students/1/report-card', 'Semester_GradeCard.pdf')}
+            >
+              <span>📄 Download Official Semester Grade Card (PDF)</span>
+              <span className="arrow">⬇</span>
+            </button>
             <button className="action-button" onClick={() => navigate('/student/profile')}>
               <span>👤 View My Complete Profile & Personal Records</span>
               <span className="arrow">→</span>
