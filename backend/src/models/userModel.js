@@ -63,6 +63,15 @@ const seedMockUsers = async () => {
       locked_until: null,
     },
     {
+      user_id: 5,
+      email: 'student2@edutrack.edu',
+      password_hash: defaultHash,
+      role: 'Student',
+      is_active: true,
+      failed_attempts: 0,
+      locked_until: null,
+    },
+    {
       user_id: 4,
       email: 'parent@edutrack.edu',
       password_hash: defaultHash,

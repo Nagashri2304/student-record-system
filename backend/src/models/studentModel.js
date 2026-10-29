@@ -44,11 +44,11 @@ const seedMockStudents = () => {
     },
     {
       student_id: 2,
-      user_id: 102,
+      user_id: 5,
       roll_number: 'USN2026CS002',
       first_name: 'Bhavya',
       last_name: 'Patel',
-      email: 'bhavya@edutrack.edu',
+      email: 'student2@edutrack.edu',
       dept_id: 1,
       dept_code: 'CSE',
       dept_name: 'Computer Science & Engineering',
@@ -418,7 +418,25 @@ const remove = async (studentId) => {
   return null;
 };
 
+const findByParentUserId = async (pId) => {
+  const numericId = Number(pId);
+  if (db.query) {
+    try {
+      const res = await db.query(
+        'SELECT s.*, d.dept_code, d.dept_name FROM students s LEFT JOIN departments d ON s.dept_id = d.dept_id WHERE s.parent_user_id = $1',
+        [numericId]
+      );
+      if (res.rows && res.rows.length > 0) return res.rows[0];
+    } catch (e) {}
+  }
+  for (const stu of inMemoryStudents.values()) {
+    if (Number(stu.parent_user_id) === numericId) return stu;
+  }
+  return null;
+};
+
 module.exports = {
+  findByParentUserId,
   seedMockStudents,
   getDepartments,
   findDepartmentById,

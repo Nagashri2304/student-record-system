@@ -1,7 +1,7 @@
 /**
  * Student Management Routes
- * Requirement: SRS FR-02, SEC-01, SEC-08; Test Plan TC-02, TC-07
- * Author: Kushitha K (@Kushitha30)
+ * Requirement: SRS FR-02, SEC-01, SEC-08, FR-08; Test Plan TC-02, TC-07, TC-10
+ * Authors: Kushitha K (@Kushitha30), Nidhi L (@nidhilokesh1)
  */
 const express = require('express');
 const { verifyToken, authorizeRoles } = require('../middleware/roleAuth');
@@ -10,6 +10,7 @@ const studentController = require('../controllers/studentController');
 const courseController = require('../controllers/courseController');
 const attendanceController = require('../controllers/attendanceController');
 const gradeController = require('../controllers/gradeController');
+const reportCardController = require('../controllers/reportCardController');
 
 const router = express.Router();
 
@@ -40,5 +41,8 @@ router.get('/:id/attendance/alerts', verifyToken, attendanceController.getStuden
 
 // Student Grades & Computed GPA (FR-05, Issue #2 - Nagashri2304)
 router.get('/:id/grades', verifyToken, gradeController.getStudentGrades);
+
+// Official Semester Report Card PDF Export (FR-08, Issue #14 - Nidhi L)
+router.get('/:id/report-card', verifyToken, authorizeStudentAccess, reportCardController.generateReportCard);
 
 module.exports = router;
