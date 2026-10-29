@@ -35,6 +35,10 @@ router.get('/:id/enrollments', verifyToken, authorizeStudentAccess, courseContro
 // Student Attendance Summary (FR-04, Issue #1 - Nagashri2304)
 router.get('/:id/attendance', verifyToken, attendanceController.getStudentAttendance);
 
+// Student Attendance Shortage Alert Status (FR-07, Issue #4 - Nagashri2304)
+router.get('/:id/attendance-alert', verifyToken, attendanceController.getStudentAlertStatus);
+router.get('/:id/attendance/alerts', verifyToken, attendanceController.getStudentAlertStatus);
+
 // Student Grades & Computed GPA (FR-05, Issue #2 - Nagashri2304)
 router.get('/:id/grades', verifyToken, gradeController.getStudentGrades);
 

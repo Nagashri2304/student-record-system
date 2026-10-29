@@ -44,11 +44,11 @@ const seedMockStudents = () => {
     },
     {
       student_id: 2,
-      user_id: 102,
+      user_id: 5,
       roll_number: 'USN2026CS002',
       first_name: 'Bhavya',
       last_name: 'Patel',
-      email: 'bhavya@edutrack.edu',
+      email: 'student2@edutrack.edu',
       dept_id: 1,
       dept_code: 'CSE',
       dept_name: 'Computer Science & Engineering',

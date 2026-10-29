@@ -225,10 +225,158 @@ const getStudentAttendance = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/v1/attendance/alerts
+ * FR-07: Retrieve real-time list of all students falling below the 75% attendance threshold.
+ * Accessible to Admin and Faculty.
+ */
+const getAttendanceAlerts = async (req, res) => {
+  try {
+    const { course_id, threshold } = req.query;
+    const alerts = await attendanceModel.getAttendanceAlerts({ course_id, threshold });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Low attendance alerts computed successfully.',
+      count: alerts.length,
+      data: alerts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/v1/courses/:id/attendance/alerts
+ * FR-07: Retrieve attendance shortage alerts for a specific course.
+ * Accessible to Admin and Faculty.
+ */
+const getCourseAttendanceAlerts = async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.id, 10);
+    if (isNaN(courseId)) {
+      return res.status(400).json({ success: false, message: 'Invalid course ID.' });
+    }
+
+    const course = await courseModel.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    const { threshold } = req.query;
+    const alerts = await attendanceModel.getAttendanceAlerts({ course_id: courseId, threshold });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Course attendance alerts retrieved successfully.',
+      course_id: courseId,
+      count: alerts.length,
+      data: alerts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * POST /api/v1/attendance/alerts/dispatch
+ * FR-07: Dispatch automated urgent attendance shortage warnings (SMS/Email) to students & parents.
+ * Accessible to Admin and Faculty.
+ */
+const dispatchAttendanceAlerts = async (req, res) => {
+  try {
+    const { course_id, threshold } = req.body || {};
+    const result = await attendanceModel.dispatchAttendanceAlerts({
+      course_id,
+      threshold,
+      actor_user_id: req.user.user_id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully dispatched ${result.dispatched_count} attendance shortage alerts.`,
+      data: result,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * GET /api/v1/students/:id/attendance-alert (or /api/v1/students/:id/attendance/alerts)
+ * FR-07: Check if a student has an active shortage warning banner (<75%).
+ * Accessible to Admin, Faculty, Student (self), and Parent (linked).
+ */
+const getStudentAlertStatus = async (req, res) => {
+  try {
+    let studentId;
+
+    if (req.params.id === 'me') {
+      const student = await studentModel.findByUserId(req.user.user_id);
+      if (!student) {
+        return res.status(404).json({ success: false, message: 'Student profile not found for this user.' });
+      }
+      studentId = student.student_id;
+    } else {
+      studentId = parseInt(req.params.id, 10);
+      const student = await studentModel.findById(studentId);
+      if (!student) {
+        return res.status(404).json({ success: false, message: 'Student not found.' });
+      }
+
+      // IDOR check: Student can only view own; Parent can only view linked child
+      if (req.user.role === 'Student' && req.user.user_id !== student.user_id) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied: You do not have permission to view this resource.',
+        });
+      }
+      if (req.user.role === 'Parent' && student.parent_user_id !== req.user.user_id) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied: You do not have permission to view this resource.',
+        });
+      }
+    }
+
+    const summary = await attendanceModel.getStudentAttendanceSummary(studentId);
+    const hasShortage = summary.isShortage;
+
+    return res.status(200).json({
+      success: true,
+      student_id: studentId,
+      overall_percentage: summary.overallPercentage,
+      is_shortage: hasShortage,
+      warning_banner: hasShortage
+        ? `Warning: Overall attendance is ${summary.overallPercentage}% (below 75.0%). Risk of semester exam debarment.`
+        : null,
+      course_alerts: summary.courses.filter((c) => c.isShortage),
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   markAttendance,
   getCourseAttendance,
   getAttendanceSession,
   updateAttendanceSession,
   getStudentAttendance,
+  getAttendanceAlerts,
+  getCourseAttendanceAlerts,
+  dispatchAttendanceAlerts,
+  getStudentAlertStatus,
 };
