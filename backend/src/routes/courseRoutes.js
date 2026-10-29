@@ -26,6 +26,7 @@ router.get('/:id/roster', verifyToken, authorizeRoles('Admin', 'Faculty'), cours
 // Daily Attendance Endpoints (FR-04, Issue #1 - Nagashri2304)
 router.post('/:id/attendance', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.markAttendance);
 router.get('/:id/attendance', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.getCourseAttendance);
+router.get('/:id/attendance/alerts', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.getCourseAttendanceAlerts);
 router.get('/:id/attendance/:sessionId', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.getAttendanceSession);
 router.put('/:id/attendance/:sessionId', verifyToken, authorizeRoles('Admin', 'Faculty'), attendanceController.updateAttendanceSession);
 

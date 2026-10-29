@@ -473,15 +473,137 @@ const getStudentAttendanceSummary = async (studentId) => {
   };
 };
 
+// In-memory alert dispatch history
+const inMemoryAlertDispatches = [];
+const SHORTAGE_THRESHOLD = 75.0;
+
+/**
+ * FR-07: Real-Time Attendance Percentage Engine & Low Attendance Alert (<75%) System
+ * Identifies all students across course batches falling below the statutory 75.0% boundary.
+ */
+const getAttendanceAlerts = async ({ course_id, threshold = 75.0 } = {}) => {
+  const numericThreshold = Number(threshold) || 75.0;
+  const numericCourseId = course_id ? parseInt(course_id, 10) : null;
+  const alerts = [];
+
+  const studentModel = require('./studentModel');
+  const courseModel = require('./courseModel');
+
+  // Group attendance records by (student_id, course_id)
+  const studentCourseStats = new Map();
+
+  for (const rec of inMemoryRecords.values()) {
+    const session = inMemorySessions.get(rec.session_id);
+    if (!session) continue;
+    if (numericCourseId && session.course_id !== numericCourseId) continue;
+
+    const key = `${rec.student_id}_${session.course_id}`;
+    if (!studentCourseStats.has(key)) {
+      studentCourseStats.set(key, {
+        student_id: rec.student_id,
+        course_id: session.course_id,
+        total: 0,
+        present: 0,
+        late: 0,
+        absent: 0,
+        excused: 0,
+      });
+    }
+
+    const s = studentCourseStats.get(key);
+    s.total += 1;
+    if (rec.status === 'present') s.present += 1;
+    else if (rec.status === 'late') s.late += 1;
+    else if (rec.status === 'absent') s.absent += 1;
+    else if (rec.status === 'excused') s.excused += 1;
+  }
+
+  for (const stats of studentCourseStats.values()) {
+    if (stats.total === 0) continue;
+    const rate = Number((((stats.present + stats.late) / stats.total) * 100).toFixed(1));
+
+    if (rate < numericThreshold) {
+      const student = await studentModel.findById(stats.student_id);
+      const course = await courseModel.findById(stats.course_id);
+
+      // Deficit: how many more consecutive classes needed to reach 75%
+      const deficit = Math.max(1, Math.ceil((0.75 * stats.total - (stats.present + stats.late)) / 0.25));
+
+      alerts.push({
+        student_id: stats.student_id,
+        student_name: student ? `${student.first_name} ${student.last_name}` : `Student ${stats.student_id}`,
+        roll_number: student ? student.roll_number : null,
+        course_id: stats.course_id,
+        course_code: course ? course.course_code : `COURSE-${stats.course_id}`,
+        course_name: course ? course.course_name : 'Unknown Course',
+        total_sessions: stats.total,
+        attended_sessions: stats.present + stats.late,
+        absent_sessions: stats.absent,
+        excused_sessions: stats.excused,
+        attendance_percentage: rate,
+        is_shortage: true,
+        threshold: numericThreshold,
+        debarment_risk: rate < 65.0 ? 'CRITICAL' : 'HIGH',
+        warning_level: 'ATTENDANCE_SHORTAGE_WARNING',
+        warning_banner: `Warning: Attendance is ${rate}% (below ${numericThreshold}%). Risk of semester exam debarment.`,
+        classes_needed_to_reach_75: deficit,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  return alerts.sort((a, b) => a.attendance_percentage - b.attendance_percentage);
+};
+
+/**
+ * Dispatch automated low attendance warning notifications (SMS / Email mock)
+ */
+const dispatchAttendanceAlerts = async ({ course_id, threshold = 75.0, actor_user_id = null }) => {
+  const alerts = await getAttendanceAlerts({ course_id, threshold });
+  const dispatchTimestamp = new Date().toISOString();
+
+  const dispatched = [];
+  for (const alert of alerts) {
+    const dispatchRecord = {
+      dispatch_id: inMemoryAlertDispatches.length + 1,
+      student_id: alert.student_id,
+      student_name: alert.student_name,
+      course_id: alert.course_id,
+      course_code: alert.course_code,
+      attendance_percentage: alert.attendance_percentage,
+      debarment_risk: alert.debarment_risk,
+      channel: 'SMS_AND_EMAIL',
+      message: `URGENT ACADEMIC NOTICE: Your attendance in ${alert.course_code} (${alert.course_name}) is ${alert.attendance_percentage}% (<75%). Please contact your instructor.`,
+      dispatched_by: actor_user_id,
+      timestamp: dispatchTimestamp,
+      status: 'DELIVERED',
+    };
+    inMemoryAlertDispatches.push(dispatchRecord);
+    dispatched.push(dispatchRecord);
+  }
+
+  return {
+    success: true,
+    dispatched_count: dispatched.length,
+    threshold,
+    timestamp: dispatchTimestamp,
+    dispatches: dispatched,
+  };
+};
+
 module.exports = {
   createSession,
   findSessionById,
   findSessionsByCourse,
   updateSession,
   getStudentAttendanceSummary,
+  getAttendanceAlerts,
+  dispatchAttendanceAlerts,
   seedMockAttendance,
   inMemorySessions,
   inMemoryRecords,
+  inMemoryAlertDispatches,
   VALID_STATUSES,
   TWENTY_FOUR_HOURS_MS,
+  SHORTAGE_THRESHOLD,
 };
