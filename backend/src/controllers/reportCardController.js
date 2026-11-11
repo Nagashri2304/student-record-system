@@ -34,8 +34,14 @@ const generateReportCard = async (req, res, next) => {
     }
 
     // Fetch grades & computed GPA
+    const requestedSemester = req.query.semester ? parseInt(req.query.semester, 10) : null;
     const gradesData = await gradeModel.findGradesByStudent(studentId);
-    const gradesList = gradesData.grades || [];
+    let gradesList = gradesData.grades || [];
+
+    // Filter by semester if requested by user
+    if (requestedSemester && !isNaN(requestedSemester)) {
+      gradesList = gradesList.filter((g) => Number(g.semester) === requestedSemester);
+    }
     const gpa = gradesData.gpa || (gradesList.length > 0 ? '8.85' : 'N/A');
 
     // Fetch attendance summary
@@ -47,7 +53,7 @@ const generateReportCard = async (req, res, next) => {
     const rollNo = student.roll_number || student.rollNo || `USN2026CS${String(studentId).padStart(3, '0')}`;
     const studentName = `${student.first_name || student.name || 'Student'} ${student.last_name || ''}`.trim();
     const department = student.dept_name || student.department || 'Computer Science & Engineering';
-    const semester = student.semester || 4;
+    const semester = requestedSemester || student.semester || 4;
 
     // Create a new PDF document in memory
     const doc = new PDFDocument({

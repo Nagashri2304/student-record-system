@@ -32,6 +32,8 @@ export default function GradesView() {
       .catch(() => {})
   }, [])
 
+  const [selectedSemester, setSelectedSemester] = useState('all')
+
   async function handleDownloadGradeCard() {
     try {
       setDownloading(true)
@@ -58,8 +60,10 @@ export default function GradesView() {
         }
       }
 
-      await api.downloadBlob(`/students/${targetId}/report-card`, `Semester_GradeCard_Student_${targetId}.pdf`)
-      setDownloadMsg('Official Grade Card PDF downloaded successfully!')
+      const semQuery = selectedSemester !== 'all' ? `?semester=${selectedSemester}` : ''
+      const semLabel = selectedSemester !== 'all' ? `Sem${selectedSemester}` : 'Consolidated'
+      await api.downloadBlob(`/students/${targetId}/report-card${semQuery}`, `GradeCard_${semLabel}_Student_${targetId}.pdf`)
+      setDownloadMsg(`Official Grade Card (${semLabel}) downloaded successfully!`)
       setTimeout(() => setDownloadMsg(''), 5000)
     } catch (err) {
       setDownloadMsg(`Error downloading PDF: ${err.message || 'Server error'}`)
@@ -115,27 +119,49 @@ export default function GradesView() {
 
         {/* FR-08: Grade Card Generation & PDF Export Service button */}
         {(role === 'STUDENT' || role === 'PARENT' || role === 'ADMIN') && (
-          <button
-            type="button"
-            className="primary-pill-btn"
-            onClick={handleDownloadGradeCard}
-            disabled={downloading}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '10px 18px',
-              backgroundColor: '#4f46e5',
-              color: '#ffffff',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: downloading ? 'not-allowed' : 'pointer',
-              fontWeight: '600',
-              boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
-            }}
-          >
-            <span>{downloading ? '⏳ Compiling PDF...' : '📄 Download Official Grade Card (PDF)'}</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <select
+              value={selectedSemester}
+              onChange={(e) => setSelectedSemester(e.target.value)}
+              style={{
+                padding: '9px 12px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1',
+                fontSize: '14px',
+                fontWeight: '500',
+                backgroundColor: '#ffffff',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="all">All Semesters</option>
+              <option value="1">Semester 1</option>
+              <option value="2">Semester 2</option>
+              <option value="3">Semester 3</option>
+              <option value="4">Semester 4</option>
+            </select>
+
+            <button
+              type="button"
+              className="primary-pill-btn"
+              onClick={handleDownloadGradeCard}
+              disabled={downloading}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 18px',
+                backgroundColor: '#4f46e5',
+                color: '#ffffff',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: downloading ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)'
+              }}
+            >
+              <span>{downloading ? '⏳ Compiling PDF...' : '📄 Download Grade Card (PDF)'}</span>
+            </button>
+          </div>
         )}
       </div>
 

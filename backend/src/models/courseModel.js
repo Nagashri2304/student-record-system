@@ -70,7 +70,7 @@ const seedMockCourses = () => {
   }
   nextCourseId = 4;
 
-  // Initial Enrollment: Student 1 enrolled in CS101 and CS102
+  // Initial Enrollment: Student 1 enrolled in CS101, CS102, and MA101
   const initialEnrollments = [
     {
       enrollment_id: 1,
@@ -84,6 +84,14 @@ const seedMockCourses = () => {
       enrollment_id: 2,
       student_id: 1,
       course_id: 2,
+      semester: 4,
+      academic_year: '2025-2026',
+      created_at: new Date().toISOString(),
+    },
+    {
+      enrollment_id: 3,
+      student_id: 1,
+      course_id: 3,
       semester: 4,
       academic_year: '2025-2026',
       created_at: new Date().toISOString(),

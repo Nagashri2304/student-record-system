@@ -77,6 +77,18 @@ const seedMockGrades = () => {
       updated_at: new Date().toISOString(),
     },
     {
+      grade_id: 4,
+      course_id: 3,
+      student_id: 1,
+      marks: 88,
+      letter_grade: 'A',
+      grade_points: 9,
+      note: 'End semester evaluation',
+      created_by: 2,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
       grade_id: 3,
       course_id: 1,
       student_id: 2,
