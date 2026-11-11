@@ -34,6 +34,21 @@ All Part-1 specifications are provided as formal Word documents (`.docx`) and na
 
 ---
 
+## 🧪 Deliverables Part-3: Testing & Quality Assurance Reports (2nd Nov to 6th Nov)
+
+All formal IEEE Std 829 test reports, coverage analyses, and teacher evaluation checklists are finalized and uploaded to `docs/`:
+
+| Deliverable Report | Standard / Format | Document Link | Scope & Highlights |
+|---|---|---|---|
+| **1. Updated Software Test Plan** | IEEE Std 829-2008 (`.md`) | [docs/2_TestPlan_StudentRecordSystem.md](docs/2_TestPlan_StudentRecordSystem.md) | Updated test plan with Section 5.1 Security Validation, Traceability Matrix, and TC-01 to TC-14. |
+| **2. Unit Test Report** | IEEE Std 829 (`.md`) | [docs/4_UnitTestReport.md](docs/4_UnitTestReport.md) | 14 test suites, 143 unit test cases executed, **100% pass rate** across all core modules. |
+| **3. System Validation Report** | IEEE Std 829 (`.md`) | [docs/5_SystemValidationReport.md](docs/5_SystemValidationReport.md) | End-to-end multi-role validation across Admin, Faculty, Student, and Parent personas. |
+| **4. Code Coverage Report** | Istanbul / V8 (`.md`) | [docs/6_CodeCoverageReport.md](docs/6_CodeCoverageReport.md) | **72.41% Stmts**, **80.98% Funcs**, **73.94% Lines** coverage (>90% on critical security). |
+| **5. Branch Coverage Report** | IEEE Std 829 (`.md`) | [docs/7_BranchCoverageReport.md](docs/7_BranchCoverageReport.md) | In-depth boolean and decision branch analysis across auth lockout, RBAC, IDOR, and <75% alerts. |
+| **6. Teacher Evaluation Checklist** | Rubric Matrix (`.md`) | [docs/PROJECT_EVALUATION_CHECKLIST.md](docs/PROJECT_EVALUATION_CHECKLIST.md) | Comprehensive line-by-line audit checklist with commit, PR, and file evidence for every rubric item. |
+
+---
+
 ## 🚀 Deliverables Part-2: Agile Sprints & Backlog (20 Issues)
 
 The project backlog is organized into **exactly 20 issues** (maximum 20 issues as per requirements), assigned with **Fibonacci Story Points** (`[SP-1]` to `[SP-5]`), and planned across **Two Sprints**:
