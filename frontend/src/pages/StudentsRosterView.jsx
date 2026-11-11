@@ -15,8 +15,22 @@ export default function StudentsRosterView() {
   useEffect(() => {
     api.get('/students')
       .then((res) => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setStudents(res.data)
+        const rawList = res.data?.students || res.data || res
+        if (Array.isArray(rawList) && rawList.length > 0) {
+          const normalized = rawList.map((s, idx) => ({
+            id: s.student_id || s.id || idx + 1,
+            rollNo: s.roll_number || s.rollNo || `SR00${idx + 1}`,
+            name: s.first_name ? `${s.first_name} ${s.last_name || ''}`.trim() : (s.name || 'Student'),
+            department: s.dept_name || s.dept_code || s.department || 'Computer Science and Engineering',
+            semester: s.semester || 3,
+            section: s.section || 'A',
+            email: s.email || 'student@edutrack.edu',
+            phone: s.phone || '+91 98765 43210',
+            guardianContact: s.guardian_phone || s.guardianContact || '+91 90000 00001',
+            cgpa: s.cgpa ? String(s.cgpa) : '8.85',
+            status: s.is_active !== false ? 'Active' : 'Inactive',
+          }))
+          setStudents(normalized)
         }
       })
       .catch(() => {})
