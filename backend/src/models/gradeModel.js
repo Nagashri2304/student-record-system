@@ -52,58 +52,28 @@ const seedMockGrades = () => {
   nextAuditId = 1;
 
   const initialGrades = [
-    {
-      grade_id: 1,
-      course_id: 1,
-      student_id: 1,
-      marks: 86,
-      letter_grade: 'A',
-      grade_points: 9,
-      note: 'Initial end-semester evaluation',
-      created_by: 2,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      grade_id: 2,
-      course_id: 2,
-      student_id: 1,
-      marks: 92,
-      letter_grade: 'S',
-      grade_points: 10,
-      note: 'Final assessment submission',
-      created_by: 2,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      grade_id: 4,
-      course_id: 3,
-      student_id: 1,
-      marks: 88,
-      letter_grade: 'A',
-      grade_points: 9,
-      note: 'End semester evaluation',
-      created_by: 2,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      grade_id: 3,
-      course_id: 1,
-      student_id: 2,
-      marks: 74,
-      letter_grade: 'B',
-      grade_points: 8,
-      note: 'First evaluation',
-      created_by: 2,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
+    // Semester 1
+    { grade_id: 1, course_id: 1, student_id: 1, marks: 88, letter_grade: 'A', grade_points: 9, note: 'Sem 1 Exam' },
+    // Semester 2
+    { grade_id: 2, course_id: 2, student_id: 1, marks: 91, letter_grade: 'S', grade_points: 10, note: 'Sem 2 Exam' },
+    // Semester 3
+    { grade_id: 5, course_id: 5, student_id: 1, marks: 92, letter_grade: 'S', grade_points: 10, note: 'Sem 3 Exam' },
+    { grade_id: 6, course_id: 6, student_id: 1, marks: 86, letter_grade: 'A', grade_points: 9, note: 'Sem 3 Exam' },
+    // Semester 4 (Active Semester - 3 subjects)
+    { grade_id: 7, course_id: 7, student_id: 1, marks: 94, letter_grade: 'S', grade_points: 10, note: 'Sem 4 Exam' },
+    { grade_id: 8, course_id: 8, student_id: 1, marks: 89, letter_grade: 'A', grade_points: 9, note: 'Sem 4 Exam' },
+    { grade_id: 9, course_id: 9, student_id: 1, marks: 85, letter_grade: 'A', grade_points: 9, note: 'Sem 4 Exam' },
+    // Student 2 record
+    { grade_id: 10, course_id: 1, student_id: 2, marks: 74, letter_grade: 'B', grade_points: 8, note: 'First evaluation' },
   ];
 
   for (const g of initialGrades) {
-    inMemoryGrades.set(g.grade_id, g);
+    inMemoryGrades.set(g.grade_id, {
+      ...g,
+      created_by: 2,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
     inMemoryAuditLogs.push({
       audit_id: nextAuditId++,
       action: 'GRADE_SUBMITTED',
@@ -113,11 +83,11 @@ const seedMockGrades = () => {
       new_marks: g.marks,
       letter_grade: g.letter_grade,
       note: g.note,
-      actor_user_id: g.created_by,
-      timestamp: g.created_at,
+      actor_user_id: 2,
+      timestamp: new Date().toISOString(),
     });
   }
-  nextGradeId = 4;
+  nextGradeId = 11;
 };
 
 // Initialize mock store
@@ -423,6 +393,7 @@ const findGradesByStudent = async (studentId) => {
     if (g.student_id === numericStudentId) {
       const course = await courseModel.findById(g.course_id);
       const credits = course ? course.credits : 3;
+      const semester = course ? course.semester : 3;
 
       totalCredits += credits;
       totalCreditPoints += credits * g.grade_points;
@@ -432,6 +403,7 @@ const findGradesByStudent = async (studentId) => {
         course_code: course ? course.course_code : `COURSE-${g.course_id}`,
         course_name: course ? course.course_name : 'Unknown Course',
         credits,
+        semester,
       });
     }
   }

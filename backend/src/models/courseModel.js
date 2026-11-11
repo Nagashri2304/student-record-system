@@ -26,22 +26,87 @@ const seedMockCourses = () => {
   const initialCourses = [
     {
       course_id: 1,
-      course_code: 'CS101',
-      course_name: 'Data Structures and Algorithms',
+      course_code: 'MA101',
+      course_name: 'Engineering Mathematics & Calculus',
       credits: 4,
       dept_id: 1,
       dept_code: 'CSE',
-      semester: 3,
-      faculty_user_id: 2, // Faculty user
+      semester: 1,
+      faculty_user_id: 2,
       is_active: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
     {
       course_id: 2,
-      course_code: 'CS102',
+      course_code: 'CS101',
+      course_name: 'Programming & Problem Solving in C',
+      credits: 4,
+      dept_id: 1,
+      dept_code: 'CSE',
+      semester: 1,
+      faculty_user_id: 2,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      course_id: 3,
+      course_code: 'CS201',
+      course_name: 'Data Structures and Algorithms',
+      credits: 4,
+      dept_id: 1,
+      dept_code: 'CSE',
+      semester: 2,
+      faculty_user_id: 2,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      course_id: 4,
+      course_code: 'CS202',
+      course_name: 'Computer Organization & Architecture',
+      credits: 4,
+      dept_id: 1,
+      dept_code: 'CSE',
+      semester: 2,
+      faculty_user_id: 2,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      course_id: 5,
+      course_code: 'CS301',
       course_name: 'Database Management Systems',
-      credits: 3,
+      credits: 4,
+      dept_id: 1,
+      dept_code: 'CSE',
+      semester: 3,
+      faculty_user_id: 2,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      course_id: 6,
+      course_code: 'CS302',
+      course_name: 'Operating Systems & System Programming',
+      credits: 4,
+      dept_id: 1,
+      dept_code: 'CSE',
+      semester: 3,
+      faculty_user_id: 2,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      course_id: 7,
+      course_code: 'CS401',
+      course_name: 'Design and Analysis of Algorithms',
+      credits: 4,
       dept_id: 1,
       dept_code: 'CSE',
       semester: 4,
@@ -51,14 +116,27 @@ const seedMockCourses = () => {
       updated_at: new Date().toISOString(),
     },
     {
-      course_id: 3,
-      course_code: 'MA101',
-      course_name: 'Discrete Mathematics and Graph Theory',
+      course_id: 8,
+      course_code: 'CS402',
+      course_name: 'Software Engineering & Object-Oriented Design',
       credits: 4,
       dept_id: 1,
       dept_code: 'CSE',
-      semester: 3,
-      faculty_user_id: null,
+      semester: 4,
+      faculty_user_id: 2,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    },
+    {
+      course_id: 9,
+      course_code: 'CS403',
+      course_name: 'Computer Networks & Distributed Systems',
+      credits: 3,
+      dept_id: 1,
+      dept_code: 'CSE',
+      semester: 4,
+      faculty_user_id: 2,
       is_active: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -68,40 +146,28 @@ const seedMockCourses = () => {
   for (const c of initialCourses) {
     inMemoryCourses.set(c.course_id, { ...c });
   }
-  nextCourseId = 4;
+  nextCourseId = 10;
 
-  // Initial Enrollment: Student 1 enrolled in CS101, CS102, and MA101
+  // Student 1 & 2 Enrollments across Semesters 1, 2, 3, and 4
   const initialEnrollments = [
-    {
-      enrollment_id: 1,
-      student_id: 1,
-      course_id: 1,
-      semester: 3,
-      academic_year: '2025-2026',
-      created_at: new Date().toISOString(),
-    },
-    {
-      enrollment_id: 2,
-      student_id: 1,
-      course_id: 2,
-      semester: 4,
-      academic_year: '2025-2026',
-      created_at: new Date().toISOString(),
-    },
-    {
-      enrollment_id: 3,
-      student_id: 1,
-      course_id: 3,
-      semester: 4,
-      academic_year: '2025-2026',
-      created_at: new Date().toISOString(),
-    },
+    { enrollment_id: 1, student_id: 1, course_id: 1, semester: 1, academic_year: '2024-2025' },
+    { enrollment_id: 2, student_id: 1, course_id: 2, semester: 1, academic_year: '2024-2025' },
+    { enrollment_id: 3, student_id: 1, course_id: 3, semester: 2, academic_year: '2024-2025' },
+    { enrollment_id: 4, student_id: 1, course_id: 4, semester: 2, academic_year: '2024-2025' },
+    { enrollment_id: 5, student_id: 1, course_id: 5, semester: 3, academic_year: '2025-2026' },
+    { enrollment_id: 6, student_id: 1, course_id: 6, semester: 3, academic_year: '2025-2026' },
+    { enrollment_id: 7, student_id: 1, course_id: 7, semester: 4, academic_year: '2025-2026' },
+    { enrollment_id: 8, student_id: 1, course_id: 8, semester: 4, academic_year: '2025-2026' },
+    { enrollment_id: 9, student_id: 1, course_id: 9, semester: 4, academic_year: '2025-2026' },
+    // Student 2 enrollments
+    { enrollment_id: 10, student_id: 2, course_id: 1, semester: 1, academic_year: '2024-2025' },
+    { enrollment_id: 11, student_id: 2, course_id: 3, semester: 2, academic_year: '2024-2025' },
   ];
 
   for (const e of initialEnrollments) {
-    inMemoryEnrollments.set(e.enrollment_id, { ...e });
+    inMemoryEnrollments.set(e.enrollment_id, { ...e, created_at: new Date().toISOString() });
   }
-  nextEnrollmentId = 3;
+  nextEnrollmentId = 10;
 };
 
 // Seed on module load
