@@ -6,15 +6,15 @@ import { api } from '../api/client'
 const CURRENT_YEAR = new Date().getFullYear()
 
 const DEMO_PRESETS = [
-  { label: 'Student', username: 'student1', role: 'Student', name: 'Aarav Sharma' },
-  { label: 'Faculty', username: 'faculty1', role: 'Faculty', name: 'Dr. Kavya Rao' },
-  { label: 'Admin', username: 'admin', role: 'Admin', name: 'System Administrator' },
-  { label: 'Parent', username: 'parent1', role: 'Parent', name: 'Parent of Aarav' },
+  { label: 'Student', username: 'student@edutrack.edu', role: 'Student', name: 'Aarav Sharma' },
+  { label: 'Faculty', username: 'faculty@edutrack.edu', role: 'Faculty', name: 'Dr. Kavya Rao' },
+  { label: 'Admin', username: 'admin@edutrack.edu', role: 'Admin', name: 'System Administrator' },
+  { label: 'Parent', username: 'parent@edutrack.edu', role: 'Parent', name: 'Parent of Aarav' },
 ]
 
 export default function Login() {
-  const [username, setUsername] = useState('student1')
-  const [password, setPassword] = useState('Test@1234')
+  const [username, setUsername] = useState('student@edutrack.edu')
+  const [password, setPassword] = useState('Password@123')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -23,7 +23,7 @@ export default function Login() {
 
   function handleQuickLogin(preset) {
     setUsername(preset.username)
-    setPassword('Test@1234')
+    setPassword('Password@123')
     setError('')
   }
 
@@ -33,6 +33,7 @@ export default function Login() {
 
     try {
       const result = await api.post('/auth/login', {
+        email: userToAuth,
         username: userToAuth,
         password: passToAuth,
       })
@@ -176,12 +177,12 @@ export default function Login() {
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="field-group">
-              <label htmlFor="username">Username or ID</label>
+              <label htmlFor="username">Email or Username</label>
               <input
                 id="username"
                 name="username"
                 type="text"
-                placeholder="e.g. student1, admin, faculty1"
+                placeholder="e.g. student@edutrack.edu"
                 autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -192,7 +193,7 @@ export default function Login() {
             <div className="field-group">
               <div className="field-label-row">
                 <label htmlFor="password">Password</label>
-                <span className="field-hint">Default: Test@1234</span>
+                <span className="field-hint">Default: Password@123</span>
               </div>
               <input
                 id="password"
