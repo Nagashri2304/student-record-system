@@ -6,12 +6,16 @@ export default function GradesView() {
   const { user } = useAuth()
   const role = String(user?.role || 'STUDENT').toUpperCase()
 
-  const [grades, setGrades] = useState([
-    { id: 1, course: 'Database Management Systems', code: 'CS301', marks: 91, grade: 'A+', credits: 4, semester: 3, faculty: 'Dr. Kavya Rao' },
-    { id: 2, course: 'Software Engineering', code: 'CS302', marks: 84, grade: 'A', credits: 4, semester: 3, faculty: 'Prof. Arjun Nair' },
-    { id: 3, course: 'Machine Learning', code: 'CS303', marks: 88, grade: 'A', credits: 4, semester: 3, faculty: 'Dr. Kavya Rao' },
-    { id: 4, course: 'Data Structures & Algorithms', code: 'CS201', marks: 94, grade: 'S', credits: 4, semester: 2, faculty: 'Dr. Kavya Rao' },
-    { id: 5, course: 'Computer Networks', code: 'CS202', marks: 79, grade: 'B+', credits: 3, semester: 2, faculty: 'Prof. Arjun Nair' },
+  const [allGrades, setAllGrades] = useState([
+    { id: 1, course: 'Engineering Mathematics & Calculus', code: 'MA101', marks: 88, grade: 'A', credits: 4, semester: 1, faculty: 'Dr. Kavya Rao' },
+    { id: 2, course: 'Programming & Problem Solving in C', code: 'CS101', marks: 91, grade: 'S', credits: 4, semester: 1, faculty: 'Prof. Arjun Nair' },
+    { id: 3, course: 'Data Structures and Algorithms', code: 'CS201', marks: 94, grade: 'S', credits: 4, semester: 2, faculty: 'Dr. Kavya Rao' },
+    { id: 4, course: 'Computer Organization & Architecture', code: 'CS202', marks: 79, grade: 'B+', credits: 4, semester: 2, faculty: 'Prof. Arjun Nair' },
+    { id: 5, course: 'Database Management Systems', code: 'CS301', marks: 92, grade: 'S', credits: 4, semester: 3, faculty: 'Dr. Kavya Rao' },
+    { id: 6, course: 'Operating Systems & System Programming', code: 'CS302', marks: 86, grade: 'A', credits: 4, semester: 3, faculty: 'Prof. Arjun Nair' },
+    { id: 7, course: 'Design and Analysis of Algorithms', code: 'CS401', marks: 94, grade: 'S', credits: 4, semester: 4, faculty: 'Dr. Kavya Rao' },
+    { id: 8, course: 'Software Engineering & Object-Oriented Design', code: 'CS402', marks: 89, grade: 'A', credits: 4, semester: 4, faculty: 'Prof. Arjun Nair' },
+    { id: 9, course: 'Computer Networks & Distributed Systems', code: 'CS403', marks: 85, grade: 'A', credits: 3, semester: 4, faculty: 'Dr. Kavya Rao' },
   ])
 
   // New mark entry form state for faculty
@@ -21,18 +25,44 @@ export default function GradesView() {
   const [successMsg, setSuccessMsg] = useState('')
   const [downloading, setDownloading] = useState(false)
   const [downloadMsg, setDownloadMsg] = useState('')
+  const [selectedSemester, setSelectedSemester] = useState('all')
 
   useEffect(() => {
-    api.get('/grades')
+    // When parent accesses, fetch child grades; when student, fetch student grades
+    const endpoint = role === 'PARENT' ? '/parent/grades' : '/grades'
+    api.get(endpoint)
       .then((res) => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setGrades(res.data)
+        const raw = res.data?.grades || res.grades || res.data
+        if (Array.isArray(raw) && raw.length > 0) {
+          const mapped = raw.map((g, idx) => ({
+            id: g.grade_id || g.id || idx + 1,
+            course: g.course_name || g.course || 'Academic Subject',
+            code: g.course_code || g.code || `CS${300 + idx}`,
+            marks: g.marks !== undefined ? g.marks : 85,
+            grade: g.letter_grade || g.grade || 'A',
+            credits: g.credits || 4,
+            semester: g.semester || 3,
+            faculty: g.faculty || 'Dr. Kavya Rao',
+          }))
+          setAllGrades(mapped)
         }
       })
       .catch(() => {})
-  }, [])
+  }, [role])
 
-  const [selectedSemester, setSelectedSemester] = useState('all')
+  // Filter grades dynamically according to selectedSemester
+  const displayGrades = selectedSemester === 'all'
+    ? allGrades
+    : allGrades.filter((g) => String(g.semester) === String(selectedSemester))
+
+  const averageMarks = displayGrades.length > 0
+    ? Math.round(displayGrades.reduce((acc, curr) => acc + curr.marks, 0) / displayGrades.length)
+    : 0
+
+  const computedGpa = displayGrades.length > 0
+    ? (displayGrades.reduce((acc, curr) => acc + (curr.marks >= 90 ? 10 : curr.marks >= 80 ? 9 : curr.marks >= 70 ? 8 : 7) * curr.credits, 0) /
+       displayGrades.reduce((acc, curr) => acc + curr.credits, 0)).toFixed(2)
+    : '8.85'
 
   async function handleDownloadGradeCard() {
     try {
@@ -86,9 +116,9 @@ export default function GradesView() {
     else letter = 'F'
 
     const updated = [
-      ...grades,
+      ...allGrades,
       {
-        id: grades.length + 1,
+        id: allGrades.length + 1,
         course: courseCode === 'CS301' ? 'Database Management Systems' : 'Machine Learning',
         code: courseCode,
         marks: num,
@@ -99,15 +129,11 @@ export default function GradesView() {
       },
     ]
 
-    setGrades(updated)
+    setAllGrades(updated)
     setEnteredMarks('')
     setSuccessMsg(`Marks (${num} - ${letter}) recorded for ${studentRoll} in ${courseCode}!`)
     setTimeout(() => setSuccessMsg(''), 4000)
   }
-
-  const averageMarks = Math.round(
-    grades.reduce((acc, curr) => acc + curr.marks, 0) / grades.length
-  )
 
   return (
     <div className="view-container">
@@ -174,7 +200,7 @@ export default function GradesView() {
       <div className="metrics-grid">
         <div className="metric-card">
           <span className="metric-label">COURSES EVALUATED</span>
-          <strong className="metric-value">{grades.length}</strong>
+          <strong className="metric-value">{displayGrades.length}</strong>
         </div>
         <div className="metric-card">
           <span className="metric-label">AVERAGE MARKS</span>
@@ -182,11 +208,13 @@ export default function GradesView() {
         </div>
         <div className="metric-card">
           <span className="metric-label">SEMESTER GPA</span>
-          <strong className="metric-value">8.85 / 10</strong>
+          <strong className="metric-value">{computedGpa} / 10</strong>
         </div>
         <div className="metric-card">
           <span className="metric-label">ACADEMIC STANDING</span>
-          <strong className="metric-value" style={{ color: '#16a34a' }}>Distinction</strong>
+          <strong className="metric-value" style={{ color: '#16a34a' }}>
+            {Number(computedGpa) >= 9.0 ? 'High Distinction' : Number(computedGpa) >= 8.0 ? 'Distinction' : 'First Class'}
+          </strong>
         </div>
       </div>
 
@@ -246,7 +274,7 @@ export default function GradesView() {
             </tr>
           </thead>
           <tbody>
-            {grades.map((item) => (
+            {displayGrades.map((item) => (
               <tr key={item.id}>
                 <td><strong>{item.course}</strong></td>
                 <td><span className="code-badge">{item.code}</span></td>
