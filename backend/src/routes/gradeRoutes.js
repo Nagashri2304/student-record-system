@@ -1,5 +1,4 @@
 const express = require("express");
-const { successResponse } = require("../utils/response");
 
 const router = express.Router();
 
@@ -12,7 +11,11 @@ let gradesList = [
 ];
 
 router.get("/", (req, res) => {
-  return successResponse(res, gradesList, "Grades retrieved successfully.");
+  return res.status(200).json({
+    success: true,
+    data: gradesList,
+    message: "Grades retrieved successfully."
+  });
 });
 
 router.post("/", (req, res) => {
@@ -28,7 +31,11 @@ router.post("/", (req, res) => {
     faculty: "Faculty Member",
   };
   gradesList.push(newGrade);
-  return successResponse(res, newGrade, "Grade entered successfully.", 201);
+  return res.status(201).json({
+    success: true,
+    data: newGrade,
+    message: "Grade entered successfully."
+  });
 });
 
 module.exports = router;

@@ -14,6 +14,7 @@ const grievanceRoutes = require('./routes/grievanceRoutes');
 const parentRoutes = require('./routes/parentRoutes');
 const auditRoutes = require('./routes/auditRoutes');
 const performanceRoutes = require('./routes/performanceRoutes');
+const gradeRoutes = require('./routes/gradeRoutes');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/students', studentRoutes);
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/attendance', attendanceRoutes);
+app.use('/api/v1/grades', gradeRoutes);
 app.use('/api/v1/grievances', grievanceRoutes);
 app.use('/api/v1/parent', parentRoutes);
 app.use('/api/v1/audit-logs', auditRoutes);
