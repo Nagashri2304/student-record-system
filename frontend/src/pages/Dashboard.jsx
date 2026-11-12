@@ -15,12 +15,15 @@ export default function Dashboard() {
     // Fetch role-specific metrics if available
     let endpoint = ''
     if (role === 'admin') endpoint = '/admin/metrics'
-    else if (role === 'student') endpoint = '/students/profile'
+    else if (role === 'student') endpoint = '/students/me'
     else if (role === 'parent') endpoint = '/parent/overview'
 
     if (endpoint) {
       api.get(endpoint)
-        .then((res) => setStats(res.data))
+        .then((res) => {
+          const profileData = res.data || res
+          setStats(profileData)
+        })
         .catch(() => {})
     }
   }, [role])
@@ -367,21 +370,28 @@ export default function Dashboard() {
   }
 
   // Default: Student Dashboard
+  const studentName = stats?.first_name ? `${stats.first_name} ${stats.last_name || ''}`.trim() : (user?.name || 'Aarav Sharma')
+  const studentRollNo = stats?.roll_number || user?.rollNo || 'USN2026CS001'
+  const studentDept = stats?.dept_name || user?.department || 'Computer Science & Engineering'
+  const studentSem = stats?.semester || user?.semester || 4
+  const studentCgpa = stats?.cgpa || user?.cgpa || '8.85'
+  const studentId = stats?.student_id || user?.studentId || 1
+
   return (
     <div className="role-dashboard">
       <div className="student-hero-banner">
         <div className="student-hero-avatar">
-          {(user?.name || 'A').charAt(0).toUpperCase()}
+          {studentName.charAt(0).toUpperCase()}
         </div>
         <div className="student-hero-info">
-          <h2>{user?.name || 'Aarav Sharma'}</h2>
+          <h2>{studentName}</h2>
           <p>
-            Roll No: {user?.rollNo || 'SR001'} · Department: {user?.department || 'Computer Science and Engineering'} · Semester: {user?.semester || 3}
+            Roll No: {studentRollNo} · Department: {studentDept} · Semester: {studentSem}
           </p>
         </div>
         <div className="cgpa-pill">
           <small>CURRENT CGPA</small>
-          <strong>8.85</strong>
+          <strong>{studentCgpa}</strong>
         </div>
       </div>
 
@@ -401,7 +411,7 @@ export default function Dashboard() {
             <span className="metric-icon">📚</span>
           </div>
           <strong className="metric-value">5 Subjects</strong>
-          <span className="metric-trend neutral">Semester 3 Curriculum</span>
+          <span className="metric-trend neutral">Semester {studentSem} Curriculum</span>
         </div>
 
         <div className="metric-card">
@@ -432,7 +442,7 @@ export default function Dashboard() {
             <button
               className="action-button"
               style={{ backgroundColor: '#4f46e5', color: '#ffffff' }}
-              onClick={() => api.downloadBlob('/students/1/report-card', 'Semester_GradeCard.pdf')}
+              onClick={() => api.downloadBlob(`/students/${studentId}/report-card`, `${studentName.replace(/\\s+/g, '_')}_GradeCard.pdf`)}
             >
               <span>📄 Download Official Semester Grade Card (PDF)</span>
               <span className="arrow">⬇</span>

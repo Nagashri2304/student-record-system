@@ -6,7 +6,8 @@ import { api } from '../api/client'
 const CURRENT_YEAR = new Date().getFullYear()
 
 const DEMO_PRESETS = [
-  { label: 'Student', username: 'student@edutrack.edu', role: 'Student', name: 'Aarav Sharma' },
+  { label: 'Student (Aarav)', username: 'student@edutrack.edu', role: 'Student', name: 'Aarav Sharma' },
+  { label: 'Student (Bhavya)', username: 'student2@edutrack.edu', role: 'Student', name: 'Bhavya Patel' },
   { label: 'Faculty', username: 'faculty@edutrack.edu', role: 'Faculty', name: 'Dr. Kavya Rao' },
   { label: 'Admin', username: 'admin@edutrack.edu', role: 'Admin', name: 'System Administrator' },
   { label: 'Parent', username: 'parent@edutrack.edu', role: 'Parent', name: 'Parent of Aarav' },

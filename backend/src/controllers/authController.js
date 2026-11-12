@@ -110,6 +110,15 @@ const login = async (req, res) => {
       expiresIn: TOKEN_EXPIRY,
     });
 
+    // Lookup linked student profile if user is a Student
+    let studentProfile = null;
+    if (user.role === 'Student') {
+      const studentModel = require('../models/studentModel');
+      studentProfile = await studentModel.findByUserId(user.user_id);
+    }
+
+    const studentName = studentProfile ? `${studentProfile.first_name} ${studentProfile.last_name || ''}`.trim() : null;
+
     return res.status(200).json({
       success: true,
       message: 'Login successful.',
@@ -119,6 +128,12 @@ const login = async (req, res) => {
         user_id: user.user_id,
         email: user.email,
         role: user.role,
+        name: studentName || (user.role === 'Admin' ? 'System Administrator' : user.role === 'Faculty' ? 'Dr. Kavya Rao' : 'Aarav Sharma'),
+        rollNo: studentProfile?.roll_number || 'USN2026CS001',
+        department: studentProfile?.dept_name || 'Computer Science & Engineering',
+        semester: studentProfile?.semester || 4,
+        cgpa: studentProfile?.cgpa || 8.85,
+        studentId: studentProfile?.student_id || 1,
       },
     });
   } catch (error) {
