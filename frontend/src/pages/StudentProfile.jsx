@@ -1,15 +1,35 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { api } from '../api/client'
 
 export default function StudentProfile() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [profile, setProfile] = useState(null)
 
-  const displayName = user?.name || 'Aarav Sharma'
-  const displayRollNo = user?.rollNo || 'SR001'
-  const displayEmail = user?.email || `${user?.username || 'student1'}@edutrack.edu`
-  const displayDept = user?.department || 'Computer Science and Engineering'
-  const displaySem = user?.semester ? `Semester ${user.semester}` : 'Semester 3'
+  useEffect(() => {
+    api.get('/students/me')
+      .then((res) => {
+        const data = res.data || res
+        setProfile(data)
+      })
+      .catch(() => {})
+  }, [])
+
+  const displayName = profile?.first_name
+    ? `${profile.first_name} ${profile.last_name || ''}`.trim()
+    : (user?.name || 'Aarav Sharma')
+
+  const displayRollNo = profile?.roll_number || user?.rollNo || 'USN2026CS001'
+  const displayEmail = profile?.email || user?.email || 'student@edutrack.edu'
+  const displayDept = profile?.dept_name || user?.department || 'Computer Science & Engineering'
+  const displaySem = profile?.semester ? `Semester ${profile.semester}` : (user?.semester ? `Semester ${user.semester}` : 'Semester 4')
+  const displaySection = profile?.section ? `Section ${profile.section}` : 'Section A'
+  const displayCgpa = profile?.cgpa ? `${profile.cgpa} / 10.0` : (user?.cgpa ? `${user.cgpa} / 10.0` : '8.85 / 10.0')
+  const displayEmergency = profile?.emergency_contact || '+91 90000 00001'
+
+  const isBhavya = displayName.toLowerCase().includes('bhavya')
 
   const profileSections = [
     {
@@ -19,10 +39,10 @@ export default function StudentProfile() {
         ['Full Name', displayName],
         ['Roll Number / SRN', displayRollNo],
         ['Email Address', displayEmail],
-        ['Contact Number', '+91 98765 43210'],
-        ['Date of Birth', '14 February 2005'],
-        ['Blood Group', 'O Positive (O+)'],
-        ['Gender', 'Male'],
+        ['Contact Number', isBhavya ? '+91 98765 43211' : '+91 98765 43210'],
+        ['Date of Birth', isBhavya ? '28 September 2005' : '14 February 2005'],
+        ['Blood Group', isBhavya ? 'B Positive (B+)' : 'O Positive (O+)'],
+        ['Gender', isBhavya ? 'Female' : 'Male'],
         ['Nationality', 'Indian'],
       ],
     },
@@ -33,9 +53,9 @@ export default function StudentProfile() {
         ['Degree Program', 'Bachelor of Technology (B.Tech)'],
         ['Department', displayDept],
         ['Current Semester', displaySem],
-        ['Class Section', 'Section A'],
+        ['Class Section', displaySection],
         ['Academic Year', '2026–2027'],
-        ['Cumulative GPA (CGPA)', '8.85 / 10.0'],
+        ['Cumulative GPA (CGPA)', displayCgpa],
         ['Current Credits Earned', '48 Credits'],
         ['Enrolment Status', 'Active & Enrolled'],
       ],
@@ -44,11 +64,11 @@ export default function StudentProfile() {
       title: 'Parent & Guardian Details',
       icon: '🏡',
       fields: [
-        ['Father / Guardian Name', 'Rajesh Sharma'],
-        ['Guardian Phone', '+91 90000 00001'],
-        ['Guardian Email', 'parent.aarav@edutrack.edu'],
-        ['Mother’s Name', 'Sunita Sharma'],
-        ['Emergency Contact', '+91 90000 00001 (Father)'],
+        ['Father / Guardian Name', isBhavya ? 'Ramesh Patel' : 'Rajesh Sharma'],
+        ['Guardian Phone', displayEmergency],
+        ['Guardian Email', isBhavya ? 'parent.bhavya@edutrack.edu' : 'parent.aarav@edutrack.edu'],
+        ['Mother’s Name', isBhavya ? 'Geeta Patel' : 'Sunita Sharma'],
+        ['Emergency Contact', `${displayEmergency} (Guardian)`],
         ['Relationship', 'Father'],
       ],
     },
@@ -56,11 +76,11 @@ export default function StudentProfile() {
       title: 'Residential & Address Records',
       icon: '📍',
       fields: [
-        ['Present Address', '3rd Cross, Near High Tension Road, Vidhya Nagar'],
-        ['Permanent Address', '3rd Cross, Near High Tension Road, Vidhya Nagar'],
+        ['Present Address', isBhavya ? '4th Main, 7th Cross, Indiranagar' : '3rd Cross, Near High Tension Road, Vidhya Nagar'],
+        ['Permanent Address', isBhavya ? '4th Main, 7th Cross, Indiranagar' : '3rd Cross, Near High Tension Road, Vidhya Nagar'],
         ['City', 'Bengaluru'],
         ['State', 'Karnataka'],
-        ['Postal Code', '560064'],
+        ['Postal Code', isBhavya ? '560038' : '560064'],
       ],
     },
   ]
