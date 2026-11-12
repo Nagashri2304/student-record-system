@@ -359,6 +359,9 @@ const findAll = async ({ dept_id, semester, search, is_active, page = 1, limit =
   if (is_active !== undefined && is_active !== null && is_active !== '') {
     const act = is_active === 'true' || is_active === true;
     results = results.filter((s) => s.is_active === act);
+  } else {
+    // By default, filter out archived students unless explicitly requested
+    results = results.filter((s) => s.is_active !== false);
   }
   if (search) {
     const term = search.toLowerCase().trim();

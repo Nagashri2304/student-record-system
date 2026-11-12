@@ -50,6 +50,27 @@ export default function StudentsRosterView() {
     loadStudents()
   }, [])
 
+  const [deletingId, setDeletingId] = useState(null)
+
+  const handleRemoveStudent = async (student) => {
+    const confirmDelete = window.confirm(`Are you sure you want to remove student "${student.name}" (${student.rollNo}) from the roster?`)
+    if (!confirmDelete) return
+
+    setDeletingId(student.id)
+    setErrorMsg('')
+    setStatusMsg('')
+
+    try {
+      await api.delete(`/students/${student.id}`)
+      setStatusMsg(`Student "${student.name}" has been removed from the directory.`)
+      loadStudents()
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to remove student.')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const handleCreateStudent = async (e) => {
     e.preventDefault()
     setErrorMsg('')
@@ -184,6 +205,7 @@ export default function StudentsRosterView() {
               <th>Email</th>
               <th>Emergency Contact</th>
               <th>Status</th>
+              <th style={{ textAlign: 'center' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -197,6 +219,27 @@ export default function StudentsRosterView() {
                 <td>{s.email}</td>
                 <td>{s.guardianContact || '+91 90000 00001'}</td>
                 <td><span className="status-tag safe">{s.status || 'Active'}</span></td>
+                <td style={{ textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveStudent(s)}
+                    disabled={deletingId === s.id}
+                    title="Remove student record"
+                    style={{
+                      background: '#fee2e2',
+                      color: '#b91c1c',
+                      border: '1px solid #fca5a5',
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {deletingId === s.id ? 'Removing...' : '🗑 Remove'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

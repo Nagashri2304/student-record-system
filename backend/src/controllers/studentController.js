@@ -222,6 +222,16 @@ const archiveStudent = async (req, res) => {
       });
     }
 
+    // Check query param ?permanent=true for hard delete
+    if (req.query.permanent === 'true' || req.query.hard === 'true') {
+      const removed = await studentModel.remove(studentId);
+      return res.status(200).json({
+        success: true,
+        message: 'Student permanently deleted from system.',
+        data: removed,
+      });
+    }
+
     const archived = await studentModel.archive(studentId);
     return res.status(200).json({
       success: true,
