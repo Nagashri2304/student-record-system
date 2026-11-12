@@ -60,12 +60,15 @@ export default function StudentsRosterView() {
     setErrorMsg('')
     setStatusMsg('')
 
+    // Immediately remove from local state for instant smooth UI response
+    setStudents((prev) => prev.filter((s) => s.id !== student.id && s.rollNo !== student.rollNo))
+
     try {
       await api.delete(`/students/${student.id}`)
       setStatusMsg(`Student "${student.name}" has been removed from the directory.`)
-      loadStudents()
     } catch (err) {
-      setErrorMsg(err.message || 'Failed to remove student.')
+      setErrorMsg(err.message || 'Failed to remove student from server.')
+      loadStudents() // Re-fetch on failure to rollback
     } finally {
       setDeletingId(null)
     }
