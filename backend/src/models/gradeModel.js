@@ -52,14 +52,15 @@ const seedMockGrades = () => {
   nextAuditId = 1;
 
   const initialGrades = [
-    // Semester 1
+    // Semester 1 (Course 1: MA101, Course 2: CS101)
     { grade_id: 1, course_id: 1, student_id: 1, marks: 88, letter_grade: 'A', grade_points: 9, note: 'Sem 1 Exam' },
-    // Semester 2
-    { grade_id: 2, course_id: 2, student_id: 1, marks: 91, letter_grade: 'S', grade_points: 10, note: 'Sem 2 Exam' },
-    // Semester 3
+    { grade_id: 2, course_id: 2, student_id: 1, marks: 91, letter_grade: 'S', grade_points: 10, note: 'Sem 1 Exam' },
+    // Semester 2 (Course 4: CS202 - CS201 course 3 left unseeded so TC-05.1 can record initial grade)
+    { grade_id: 4, course_id: 4, student_id: 1, marks: 82, letter_grade: 'A', grade_points: 9, note: 'Sem 2 Exam' },
+    // Semester 3 (Course 5: CS301, Course 6: CS302)
     { grade_id: 5, course_id: 5, student_id: 1, marks: 92, letter_grade: 'S', grade_points: 10, note: 'Sem 3 Exam' },
     { grade_id: 6, course_id: 6, student_id: 1, marks: 86, letter_grade: 'A', grade_points: 9, note: 'Sem 3 Exam' },
-    // Semester 4 (Active Semester - 3 subjects)
+    // Semester 4 (Active Semester - Course 7: CS401, Course 8: CS402, Course 9: CS403)
     { grade_id: 7, course_id: 7, student_id: 1, marks: 94, letter_grade: 'S', grade_points: 10, note: 'Sem 4 Exam' },
     { grade_id: 8, course_id: 8, student_id: 1, marks: 89, letter_grade: 'A', grade_points: 9, note: 'Sem 4 Exam' },
     { grade_id: 9, course_id: 9, student_id: 1, marks: 85, letter_grade: 'A', grade_points: 9, note: 'Sem 4 Exam' },
