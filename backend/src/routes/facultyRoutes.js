@@ -1,5 +1,4 @@
 const express = require("express");
-const { successResponse } = require("../utils/response");
 
 const router = express.Router();
 
@@ -9,7 +8,11 @@ const facultyList = [
 ];
 
 router.get("/", (req, res) => {
-  return successResponse(res, facultyList, "Faculty list retrieved successfully.");
+  return res.status(200).json({
+    success: true,
+    message: "Faculty list retrieved successfully.",
+    data: facultyList
+  });
 });
 
 module.exports = router;

@@ -12,7 +12,7 @@ export default function CoursesView() {
   useEffect(() => {
     api.get('/courses')
       .then((res) => {
-        const rawList = res.data?.courses || res.data || res
+        const rawList = res.data?.courses || res.courses || res.data || res
         if (Array.isArray(rawList) && rawList.length > 0) {
           const normalized = rawList.map((c, idx) => ({
             id: c.course_id || c.id || idx + 1,
@@ -20,9 +20,9 @@ export default function CoursesView() {
             name: c.course_name || c.name || 'Core Engineering Subject',
             credits: c.credits || 4,
             semester: c.semester || 3,
-            faculty: c.faculty_name || c.faculty || 'Dr. Kavya Rao',
+            faculty: c.faculty_name || c.faculty || c.faculty_email || 'Dr. Kavya Rao',
             enrolledCount: c.enrolled_count || c.enrolledCount || 60,
-            room: c.room || c.classroom || `LH-${201 + idx}`,
+            room: c.room || c.classroom || `LH-${201 + (idx % 5)}`,
           }))
           setCourses(normalized)
         }
