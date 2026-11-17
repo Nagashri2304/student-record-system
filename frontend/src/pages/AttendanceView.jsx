@@ -6,12 +6,24 @@ export default function AttendanceView() {
   const { user } = useAuth()
   const role = String(user?.role || 'STUDENT').toUpperCase()
 
-  const [records, setRecords] = useState([
-    { id: 1, course: 'Database Management Systems', code: 'CS301', attended: 28, total: 30, lastDate: '2026-10-24', faculty: 'Dr. Kavya Rao' },
-    { id: 2, course: 'Software Engineering', code: 'CS302', attended: 26, total: 28, lastDate: '2026-10-25', faculty: 'Prof. Arjun Nair' },
-    { id: 3, course: 'Machine Learning', code: 'CS303', attended: 24, total: 25, lastDate: '2026-10-26', faculty: 'Dr. Kavya Rao' },
-    { id: 4, course: 'Design & Analysis of Algorithms', code: 'CS304', attended: 29, total: 32, lastDate: '2026-10-26', faculty: 'Prof. Arjun Nair' },
-  ])
+  const [records, setRecords] = useState(() => {
+    try {
+      const saved = localStorage.getItem('edutrack_attendance_records')
+      return saved ? JSON.parse(saved) : [
+        { id: 1, course: 'Database Management Systems', code: 'CS301', attended: 28, total: 30, lastDate: '2026-10-24', faculty: 'Dr. Kavya Rao' },
+        { id: 2, course: 'Software Engineering', code: 'CS302', attended: 26, total: 28, lastDate: '2026-10-25', faculty: 'Prof. Arjun Nair' },
+        { id: 3, course: 'Machine Learning', code: 'CS303', attended: 24, total: 25, lastDate: '2026-10-26', faculty: 'Dr. Kavya Rao' },
+        { id: 4, course: 'Design & Analysis of Algorithms', code: 'CS304', attended: 29, total: 32, lastDate: '2026-10-26', faculty: 'Prof. Arjun Nair' },
+      ]
+    } catch {
+      return [
+        { id: 1, course: 'Database Management Systems', code: 'CS301', attended: 28, total: 30, lastDate: '2026-10-24', faculty: 'Dr. Kavya Rao' },
+        { id: 2, course: 'Software Engineering', code: 'CS302', attended: 26, total: 28, lastDate: '2026-10-25', faculty: 'Prof. Arjun Nair' },
+        { id: 3, course: 'Machine Learning', code: 'CS303', attended: 24, total: 25, lastDate: '2026-10-26', faculty: 'Dr. Kavya Rao' },
+        { id: 4, course: 'Design & Analysis of Algorithms', code: 'CS304', attended: 29, total: 32, lastDate: '2026-10-26', faculty: 'Prof. Arjun Nair' },
+      ]
+    }
+  })
 
   // Faculty Class Roster State
   const [activeCourse, setActiveCourse] = useState('CS301')
@@ -34,6 +46,9 @@ export default function AttendanceView() {
       .then((res) => {
         if (Array.isArray(res.data) && res.data.length > 0) {
           setRecords(res.data)
+          try {
+            localStorage.setItem('edutrack_attendance_records', JSON.stringify(res.data))
+          } catch {}
         }
       })
       .catch(() => {})
@@ -72,13 +87,16 @@ export default function AttendanceView() {
     const absentCount = classRoster.filter((s) => s.status === 'absent').length
 
     // Update the course aggregate record locally in UI
-    setRecords((prev) =>
-      prev.map((r) =>
-        r.code === activeCourse
-          ? { ...r, total: r.total + 1, attended: r.attended + (presentCount > 0 ? 1 : 0), lastDate: sessionDate }
-          : r
-      )
+    const updatedRecords = records.map((r) =>
+      r.code === activeCourse
+        ? { ...r, total: r.total + 1, attended: r.attended + (presentCount > 0 ? 1 : 0), lastDate: sessionDate }
+        : r
     )
+
+    setRecords(updatedRecords)
+    try {
+      localStorage.setItem('edutrack_attendance_records', JSON.stringify(updatedRecords))
+    } catch {}
 
     // Persist to backend so Student & Parent instantly see updated attendance
     api.post('/attendance', {

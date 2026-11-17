@@ -377,6 +377,21 @@ export default function Dashboard() {
   const studentCgpa = stats?.cgpa || user?.cgpa || '8.85'
   const studentId = stats?.student_id || user?.studentId || 1
 
+  // Dynamic live attendance calculation from synchronized storage
+  let dynamicAttended = 104
+  let dynamicTotal = 113
+  try {
+    const saved = localStorage.getItem('edutrack_attendance_records')
+    if (saved) {
+      const records = JSON.parse(saved)
+      if (Array.isArray(records) && records.length > 0) {
+        dynamicAttended = records.reduce((acc, c) => acc + (c.attended || 0), 0)
+        dynamicTotal = records.reduce((acc, c) => acc + (c.total || 0), 0)
+      }
+    }
+  } catch {}
+  const dynamicPct = Math.round((dynamicAttended / dynamicTotal) * 100) || 92
+
   return (
     <div className="role-dashboard">
       <div className="student-hero-banner">
@@ -401,8 +416,8 @@ export default function Dashboard() {
             <span className="metric-label">AVERAGE ATTENDANCE</span>
             <span className="metric-icon">◷</span>
           </div>
-          <strong className="metric-value">92%</strong>
-          <span className="metric-trend positive">104 / 113 classes attended</span>
+          <strong className="metric-value">{dynamicPct}%</strong>
+          <span className="metric-trend positive">{dynamicAttended} / {dynamicTotal} classes attended</span>
         </div>
 
         <div className="metric-card">
