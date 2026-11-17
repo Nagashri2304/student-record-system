@@ -380,6 +380,13 @@ export default function Dashboard() {
   // Dynamic live attendance calculation from synchronized storage
   let dynamicAttended = 104
   let dynamicTotal = 113
+  let dynamicCs301Attended = 28
+  let dynamicCs301Total = 30
+  let dynamicCs302Attended = 26
+  let dynamicCs302Total = 28
+  let dynamicCs303Attended = 24
+  let dynamicCs303Total = 25
+
   try {
     const saved = localStorage.getItem('edutrack_attendance_records')
     if (saved) {
@@ -387,6 +394,22 @@ export default function Dashboard() {
       if (Array.isArray(records) && records.length > 0) {
         dynamicAttended = records.reduce((acc, c) => acc + (c.attended || 0), 0)
         dynamicTotal = records.reduce((acc, c) => acc + (c.total || 0), 0)
+
+        const cs301 = records.find((c) => c.code === 'CS301')
+        if (cs301) {
+          dynamicCs301Attended = cs301.attended
+          dynamicCs301Total = cs301.total
+        }
+        const cs302 = records.find((c) => c.code === 'CS302')
+        if (cs302) {
+          dynamicCs302Attended = cs302.attended
+          dynamicCs302Total = cs302.total
+        }
+        const cs303 = records.find((c) => c.code === 'CS303')
+        if (cs303) {
+          dynamicCs303Attended = cs303.attended
+          dynamicCs303Total = cs303.total
+        }
       }
     }
   } catch {}
@@ -492,9 +515,12 @@ export default function Dashboard() {
                 <span className="badge-grade">Grade A+ (91%)</span>
               </div>
               <div className="progress-bar-bg">
-                <div className="progress-bar-fill" style={{ width: '93%' }} />
+                <div
+                  className="progress-bar-fill"
+                  style={{ width: `${Math.round((dynamicCs301Attended / dynamicCs301Total) * 100)}%` }}
+                />
               </div>
-              <small>Attendance: 28 / 30 Classes (93%)</small>
+              <small>Attendance: {dynamicCs301Attended} / {dynamicCs301Total} Classes ({Math.round((dynamicCs301Attended / dynamicCs301Total) * 100)}%)</small>
             </div>
 
             <div className="progress-item">
@@ -503,9 +529,12 @@ export default function Dashboard() {
                 <span className="badge-grade">Grade A (84%)</span>
               </div>
               <div className="progress-bar-bg">
-                <div className="progress-bar-fill" style={{ width: '92%' }} />
+                <div
+                  className="progress-bar-fill"
+                  style={{ width: `${Math.round((dynamicCs302Attended / dynamicCs302Total) * 100)}%` }}
+                />
               </div>
-              <small>Attendance: 26 / 28 Classes (92%)</small>
+              <small>Attendance: {dynamicCs302Attended} / {dynamicCs302Total} Classes ({Math.round((dynamicCs302Attended / dynamicCs302Total) * 100)}%)</small>
             </div>
 
             <div className="progress-item">
@@ -514,9 +543,12 @@ export default function Dashboard() {
                 <span className="badge-grade">Grade A (88%)</span>
               </div>
               <div className="progress-bar-bg">
-                <div className="progress-bar-fill" style={{ width: '96%' }} />
+                <div
+                  className="progress-bar-fill"
+                  style={{ width: `${Math.round((dynamicCs303Attended / dynamicCs303Total) * 100)}%` }}
+                />
               </div>
-              <small>Attendance: 24 / 25 Classes (96%)</small>
+              <small>Attendance: {dynamicCs303Attended} / {dynamicCs303Total} Classes ({Math.round((dynamicCs303Attended / dynamicCs303Total) * 100)}%)</small>
             </div>
           </div>
         </section>

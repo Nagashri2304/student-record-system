@@ -28,18 +28,51 @@ export default function AttendanceView() {
   // Faculty Class Roster State
   const [activeCourse, setActiveCourse] = useState('CS301')
   const [sessionDate, setSessionDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [classRoster, setClassRoster] = useState([
-    { student_id: 1, roll_number: 'USN2026CS001', name: 'Aarav Sharma', status: 'present', remarks: '' },
-    { student_id: 2, roll_number: 'USN2026CS002', name: 'Bhavya Patel', status: 'present', remarks: '' },
-    { student_id: 3, roll_number: 'USN2026CS003', name: 'Diya Rao', status: 'present', remarks: '' },
-    { student_id: 4, roll_number: 'USN2026CS004', name: 'Ishaan Kumar', status: 'present', remarks: '' },
-    { student_id: 5, roll_number: 'USN2026EC001', name: 'Meera Nair', status: 'absent', remarks: 'Medical leave' },
-    { student_id: 6, roll_number: 'USN2026EC002', name: 'Rohan Verma', status: 'present', remarks: '' },
-    { student_id: 7, roll_number: 'USN2026IS001', name: 'Sneha Kulkarni', status: 'present', remarks: '' },
-  ])
+  const [classRoster, setClassRoster] = useState(() => {
+    try {
+      const savedRoster = localStorage.getItem('edutrack_faculty_roster_CS301')
+      if (savedRoster) return JSON.parse(savedRoster)
+    } catch {}
+    return [
+      { student_id: 1, roll_number: 'USN2026CS001', name: 'Aarav Sharma', status: 'present', remarks: '' },
+      { student_id: 2, roll_number: 'USN2026CS002', name: 'Bhavya Patel', status: 'present', remarks: '' },
+      { student_id: 3, roll_number: 'USN2026CS003', name: 'Diya Rao', status: 'present', remarks: '' },
+      { student_id: 4, roll_number: 'USN2026CS004', name: 'Ishaan Kumar', status: 'present', remarks: '' },
+      { student_id: 5, roll_number: 'USN2026EC001', name: 'Meera Nair', status: 'absent', remarks: 'Medical leave' },
+      { student_id: 6, roll_number: 'USN2026EC002', name: 'Rohan Verma', status: 'present', remarks: '' },
+      { student_id: 7, roll_number: 'USN2026IS001', name: 'Sneha Kulkarni', status: 'present', remarks: '' },
+    ]
+  })
 
   const [notice, setNotice] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  const handleCourseChange = (newCourse) => {
+    setActiveCourse(newCourse)
+    try {
+      const savedRoster = localStorage.getItem(`edutrack_faculty_roster_${newCourse}`)
+      if (savedRoster) {
+        setClassRoster(JSON.parse(savedRoster))
+        return
+      }
+    } catch {}
+
+    api.get('/students')
+      .then((res) => {
+        const studentList = res.data?.students || res.students || res.data || []
+        if (Array.isArray(studentList) && studentList.length > 0) {
+          const mapped = studentList.map((s, idx) => ({
+            student_id: s.student_id || s.id || idx + 1,
+            roll_number: s.roll_number || s.rollNo || `USN2026CS00${idx + 1}`,
+            name: s.first_name ? `${s.first_name} ${s.last_name || ''}`.trim() : (s.name || `Student ${idx + 1}`),
+            status: 'present',
+            remarks: '',
+          }))
+          setClassRoster(mapped)
+        }
+      })
+      .catch(() => {})
+  }
 
   useEffect(() => {
     api.get('/attendance')
@@ -52,33 +85,26 @@ export default function AttendanceView() {
         }
       })
       .catch(() => {})
-
-    // Load registered students for the attendance roster
-    api.get('/students')
-      .then((res) => {
-        const studentList = res.data?.students || res.students || res.data || []
-        if (Array.isArray(studentList) && studentList.length > 0) {
-          const mapped = studentList.map((s, idx) => ({
-            student_id: s.student_id || s.id || idx + 1,
-            roll_number: s.roll_number || s.rollNo || `USN2026CS00${idx + 1}`,
-            name: s.first_name ? `${s.first_name} ${s.last_name || ''}`.trim() : (s.name || `Student ${idx + 1}`),
-            status: idx === 4 ? 'absent' : 'present',
-            remarks: idx === 4 ? 'Personal leave' : '',
-          }))
-          setClassRoster(mapped)
-        }
-      })
-      .catch(() => {})
   }, [])
 
   const handleToggleStatus = (studentId, newStatus) => {
-    setClassRoster((prev) =>
-      prev.map((s) => (s.student_id === studentId ? { ...s, status: newStatus } : s))
-    )
+    setClassRoster((prev) => {
+      const updated = prev.map((s) => (s.student_id === studentId ? { ...s, status: newStatus } : s))
+      try {
+        localStorage.setItem(`edutrack_faculty_roster_${activeCourse}`, JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
   }
 
   const handleMarkAll = (status) => {
-    setClassRoster((prev) => prev.map((s) => ({ ...s, status })))
+    setClassRoster((prev) => {
+      const updated = prev.map((s) => ({ ...s, status }))
+      try {
+        localStorage.setItem(`edutrack_faculty_roster_${activeCourse}`, JSON.stringify(updated))
+      } catch {}
+      return updated
+    })
   }
 
   const handleSubmitBatchAttendance = () => {
@@ -86,31 +112,47 @@ export default function AttendanceView() {
     const presentCount = classRoster.filter((s) => s.status === 'present').length
     const absentCount = classRoster.filter((s) => s.status === 'absent').length
 
+    // Check specific status for Aarav Sharma (student_id: 1, student@edutrack.edu / default student user)
+    // If Aarav is marked 'present', deltaAttended = 1; if Aarav is marked 'absent', deltaAttended = 0!
+    const aaravStudent = classRoster.find((s) => s.student_id === 1 || s.roll_number === 'USN2026CS001')
+    const isAaravPresent = aaravStudent ? aaravStudent.status === 'present' : presentCount > 0
+
     // Update the course aggregate record locally in UI
     const updatedRecords = records.map((r) =>
       r.code === activeCourse
-        ? { ...r, total: r.total + 1, attended: r.attended + (presentCount > 0 ? 1 : 0), lastDate: sessionDate }
+        ? {
+            ...r,
+            total: r.total + 1,
+            attended: r.attended + (isAaravPresent ? 1 : 0),
+            lastDate: sessionDate,
+          }
         : r
     )
 
     setRecords(updatedRecords)
     try {
       localStorage.setItem('edutrack_attendance_records', JSON.stringify(updatedRecords))
+      localStorage.setItem(`edutrack_faculty_roster_${activeCourse}`, JSON.stringify(classRoster))
     } catch {}
 
     // Persist to backend so Student & Parent instantly see updated attendance
     api.post('/attendance', {
       code: activeCourse,
       deltaTotal: 1,
-      deltaAttended: presentCount > 0 ? 1 : 0,
+      deltaAttended: isAaravPresent ? 1 : 0,
     }).catch(() => {})
 
     setTimeout(() => {
       setSubmitting(false)
+      const aaravStatusText = aaravStudent
+        ? ` (Aarav Sharma: ${aaravStudent.status.toUpperCase()})`
+        : ''
       setNotice(
-        `✓ Batch Attendance for ${activeCourse} recorded successfully on ${sessionDate}: ${presentCount} Present, ${absentCount} Absent.`
+        `✓ Session recorded for ${activeCourse} on ${sessionDate}: ${presentCount} Present, ${absentCount} Absent${aaravStatusText}. Total sessions increased to ${
+          (records.find((r) => r.code === activeCourse)?.total || 0) + 1
+        }.`
       )
-      setTimeout(() => setNotice(''), 5000)
+      setTimeout(() => setNotice(''), 6000)
     }, 400)
   }
 
@@ -175,7 +217,7 @@ export default function AttendanceView() {
               <label style={{ fontSize: '13px', fontWeight: 600, color: '#475569' }}>Subject:</label>
               <select
                 value={activeCourse}
-                onChange={(e) => setActiveCourse(e.target.value)}
+                onChange={(e) => handleCourseChange(e.target.value)}
                 style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontWeight: 600 }}
               >
                 <option value="CS301">CS301 - Database Management Systems</option>
@@ -245,33 +287,37 @@ export default function AttendanceView() {
                           type="button"
                           onClick={() => handleToggleStatus(s.student_id, 'present')}
                           style={{
-                            padding: '4px 10px',
+                            padding: '6px 14px',
                             borderRadius: '6px',
-                            border: s.status === 'present' ? '2px solid #16a34a' : '1px solid #e2e8f0',
-                            background: s.status === 'present' ? '#dcfce7' : '#ffffff',
-                            color: s.status === 'present' ? '#15803d' : '#64748b',
+                            border: s.status === 'present' ? '2px solid #16a34a' : '1px solid #cbd5e1',
+                            background: s.status === 'present' ? '#16a34a' : '#f8fafc',
+                            color: s.status === 'present' ? '#ffffff' : '#475569',
                             fontWeight: 700,
                             fontSize: '12px',
                             cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            boxShadow: s.status === 'present' ? '0 1px 3px rgba(22, 163, 74, 0.3)' : 'none',
                           }}
                         >
-                          Present
+                          ✓ Present
                         </button>
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(s.student_id, 'absent')}
                           style={{
-                            padding: '4px 10px',
+                            padding: '6px 14px',
                             borderRadius: '6px',
-                            border: s.status === 'absent' ? '2px solid #dc2626' : '1px solid #e2e8f0',
-                            background: s.status === 'absent' ? '#fee2e2' : '#ffffff',
-                            color: s.status === 'absent' ? '#b91c1c' : '#64748b',
+                            border: s.status === 'absent' ? '2px solid #dc2626' : '1px solid #cbd5e1',
+                            background: s.status === 'absent' ? '#dc2626' : '#f8fafc',
+                            color: s.status === 'absent' ? '#ffffff' : '#475569',
                             fontWeight: 700,
                             fontSize: '12px',
                             cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            boxShadow: s.status === 'absent' ? '0 1px 3px rgba(220, 38, 38, 0.3)' : 'none',
                           }}
                         >
-                          Absent
+                          ✕ Absent
                         </button>
                       </div>
                     </td>
