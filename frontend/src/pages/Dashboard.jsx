@@ -10,6 +10,17 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null)
 
   const role = (user?.role || location.pathname.split('/')[1] || 'student').toLowerCase()
+  const [, setStorageTick] = useState(0)
+
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if (e.key === 'edutrack_attendance_records' || e.key === 'edutrack_marks_records') {
+        setStorageTick((t) => t + 1)
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
 
   useEffect(() => {
     // Fetch role-specific metrics if available

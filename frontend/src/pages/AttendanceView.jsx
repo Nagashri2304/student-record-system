@@ -75,17 +75,43 @@ export default function AttendanceView() {
   }
 
   useEffect(() => {
+    // 1. Sync from server, but merge intelligently with localStorage so local faculty submissions aren't wiped
     api.get('/attendance')
       .then((res) => {
         const raw = res.data?.data || res.data || []
         if (Array.isArray(raw) && raw.length > 0) {
-          setRecords(raw)
-          try {
-            localStorage.setItem('edutrack_attendance_records', JSON.stringify(raw))
-          } catch {}
+          setRecords((prevRecords) => {
+            const merged = raw.map((serverRec) => {
+              const localRec = prevRecords.find((r) => r.code === serverRec.code)
+              // If local copy recorded more sessions than server in-memory list, retain the higher session count
+              if (localRec && localRec.total > serverRec.total) {
+                return localRec
+              }
+              return serverRec
+            })
+            try {
+              localStorage.setItem('edutrack_attendance_records', JSON.stringify(merged))
+            } catch {}
+            return merged
+          })
         }
       })
       .catch(() => {})
+
+    // 2. Real-time multi-tab synchronization: update records immediately when faculty marks attendance in another tab
+    const handleStorageChange = (e) => {
+      if (e.key === 'edutrack_attendance_records' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setRecords(parsed)
+          }
+        } catch {}
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
   const handleToggleStatus = (studentId, newStatus) => {
