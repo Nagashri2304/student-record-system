@@ -71,7 +71,7 @@ export default function AttendanceView() {
     const presentCount = classRoster.filter((s) => s.status === 'present').length
     const absentCount = classRoster.filter((s) => s.status === 'absent').length
 
-    // Update the course aggregate record locally
+    // Update the course aggregate record locally in UI
     setRecords((prev) =>
       prev.map((r) =>
         r.code === activeCourse
@@ -79,6 +79,13 @@ export default function AttendanceView() {
           : r
       )
     )
+
+    // Persist to backend so Student & Parent instantly see updated attendance
+    api.post('/attendance', {
+      code: activeCourse,
+      deltaTotal: 1,
+      deltaAttended: presentCount > 0 ? 1 : 0,
+    }).catch(() => {})
 
     setTimeout(() => {
       setSubmitting(false)

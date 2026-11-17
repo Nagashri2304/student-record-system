@@ -19,16 +19,41 @@ router.get("/", (req, res) => {
 });
 
 router.post("/", (req, res) => {
-  const { course, code, marks, grade } = req.body;
+  const { course, code, marks, grade, semester, faculty } = req.body;
+  const numMarks = Number(marks) || 85;
+  let letter = grade;
+  if (!letter) {
+    if (numMarks >= 90) letter = "S";
+    else if (numMarks >= 80) letter = "A";
+    else if (numMarks >= 70) letter = "B";
+    else if (numMarks >= 60) letter = "C";
+    else if (numMarks >= 50) letter = "D";
+    else letter = "F";
+  }
+
+  // Check if course already exists in the list to update, else append
+  const existing = gradesList.find(g => g.code === code);
+  if (existing) {
+    existing.marks = numMarks;
+    existing.grade = letter;
+    if (course) existing.course = course;
+    if (faculty) existing.faculty = faculty;
+    return res.status(200).json({
+      success: true,
+      data: existing,
+      message: `Marks updated for ${code}.`
+    });
+  }
+
   const newGrade = {
     id: gradesList.length + 1,
-    course: course || "New Course",
-    code: code || "CS399",
-    marks: Number(marks) || 85,
-    grade: grade || "A",
-    credits: 3,
-    semester: 3,
-    faculty: "Faculty Member",
+    course: course || (code === "CS301" ? "Database Management Systems" : code === "CS302" ? "Software Engineering" : "Core Engineering Subject"),
+    code: code || "CS301",
+    marks: numMarks,
+    grade: letter,
+    credits: 4,
+    semester: Number(semester) || 3,
+    faculty: faculty || "Dr. Kavya Rao",
   };
   gradesList.push(newGrade);
   return res.status(201).json({

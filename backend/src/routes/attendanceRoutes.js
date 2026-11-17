@@ -28,12 +28,17 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { code, attended, total } = req.body;
+  const { code, attended, total, deltaAttended, deltaTotal } = req.body;
   const match = attendanceList.find(a => a.code === code);
   if (match) {
-    if (attended !== undefined) match.attended = Number(attended);
-    if (total !== undefined) match.total = Number(total);
-    return res.status(200).json({ success: true, data: match, message: "Attendance updated successfully." });
+    if (deltaTotal) match.total += Number(deltaTotal);
+    else if (total !== undefined) match.total = Number(total);
+
+    if (deltaAttended) match.attended += Number(deltaAttended);
+    else if (attended !== undefined) match.attended = Number(attended);
+
+    match.lastDate = new Date().toISOString().split('T')[0];
+    return res.status(200).json({ success: true, data: match, message: `Attendance for ${code} updated successfully.` });
   }
   return res.status(200).json({ success: true, data: null, message: "Record updated." });
 });

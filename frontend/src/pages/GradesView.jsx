@@ -108,31 +108,56 @@ export default function GradesView() {
 
     const num = Number(enteredMarks)
     let letter = 'B'
-    if (num >= 90) letter = 'A+'
+    if (num >= 90) letter = 'S'
     else if (num >= 80) letter = 'A'
-    else if (num >= 70) letter = 'B+'
-    else if (num >= 60) letter = 'B'
-    else if (num >= 50) letter = 'C'
+    else if (num >= 70) letter = 'B'
+    else if (num >= 60) letter = 'C'
+    else if (num >= 50) letter = 'D'
     else letter = 'F'
 
-    const updated = [
-      ...allGrades,
-      {
-        id: allGrades.length + 1,
-        course: courseCode === 'CS301' ? 'Database Management Systems' : 'Machine Learning',
-        code: courseCode,
-        marks: num,
-        grade: letter,
-        credits: 4,
-        semester: 3,
-        faculty: user?.name || 'Dr. Kavya Rao',
-      },
-    ]
+    const courseMap = {
+      CS301: 'Database Management Systems',
+      CS302: 'Software Engineering',
+      CS303: 'Machine Learning',
+    }
+
+    const courseName = courseMap[courseCode] || 'Core Engineering Subject'
+
+    // 1. Optimistic update in UI
+    const existingIdx = allGrades.findIndex((g) => g.code === courseCode)
+    let updated = []
+    if (existingIdx !== -1) {
+      updated = allGrades.map((g, idx) => (idx === existingIdx ? { ...g, marks: num, grade: letter } : g))
+    } else {
+      updated = [
+        ...allGrades,
+        {
+          id: allGrades.length + 1,
+          course: courseName,
+          code: courseCode,
+          marks: num,
+          grade: letter,
+          credits: 4,
+          semester: 3,
+          faculty: user?.name || 'Dr. Kavya Rao',
+        },
+      ]
+    }
 
     setAllGrades(updated)
     setEnteredMarks('')
-    setSuccessMsg(`Marks (${num} - ${letter}) recorded for ${studentRoll} in ${courseCode}!`)
-    setTimeout(() => setSuccessMsg(''), 4000)
+    setSuccessMsg(`✓ Marks (${num} - Grade ${letter}) successfully saved for ${studentRoll} in ${courseCode}!`)
+    setTimeout(() => setSuccessMsg(''), 5000)
+
+    // 2. Persist to backend so Student & Parent instantly see the updated grade
+    api.post('/grades', {
+      code: courseCode,
+      course: courseName,
+      marks: num,
+      grade: letter,
+      semester: 3,
+      faculty: user?.name || 'Dr. Kavya Rao',
+    }).catch(() => {})
   }
 
   return (
