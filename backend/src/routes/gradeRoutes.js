@@ -68,4 +68,10 @@ router.post("/", (req, res) => {
   });
 });
 
+router.get("/report-card", (req, res, next) => {
+  const reportCardController = require("../controllers/reportCardController");
+  req.params = { id: req.query.student_id || 1 };
+  return reportCardController.generateReportCard(req, res, next);
+});
+
 module.exports = router;
