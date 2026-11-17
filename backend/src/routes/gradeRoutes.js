@@ -3,11 +3,16 @@ const express = require("express");
 const router = express.Router();
 
 let gradesList = [
-  { id: 1, course: "Database Management Systems", code: "CS301", marks: 91, grade: "A+", credits: 4, semester: 3, faculty: "Dr. Kavya Rao" },
-  { id: 2, course: "Software Engineering", code: "CS302", marks: 84, grade: "A", credits: 4, semester: 3, faculty: "Prof. Arjun Nair" },
-  { id: 3, course: "Machine Learning", code: "CS303", marks: 88, grade: "A", credits: 4, semester: 3, faculty: "Dr. Kavya Rao" },
-  { id: 4, course: "Data Structures & Algorithms", code: "CS201", marks: 94, grade: "S", credits: 4, semester: 2, faculty: "Dr. Kavya Rao" },
-  { id: 5, course: "Computer Networks", code: "CS202", marks: 79, grade: "B+", credits: 3, semester: 2, faculty: "Prof. Arjun Nair" },
+  { id: 1, course: "Engineering Mathematics & Calculus", code: "MA101", marks: 88, grade: "A", credits: 4, semester: 1, faculty: "Dr. Kavya Rao" },
+  { id: 2, course: "Programming & Problem Solving in C", code: "CS101", marks: 91, grade: "S", credits: 4, semester: 1, faculty: "Prof. Arjun Nair" },
+  { id: 3, course: "Data Structures & Algorithms", code: "CS201", marks: 94, grade: "S", credits: 4, semester: 2, faculty: "Dr. Kavya Rao" },
+  { id: 4, course: "Computer Organization & Architecture", code: "CS202", marks: 79, grade: "B+", credits: 4, semester: 2, faculty: "Prof. Arjun Nair" },
+  { id: 5, course: "Database Management Systems", code: "CS301", marks: 91, grade: "A+", credits: 4, semester: 3, faculty: "Dr. Kavya Rao" },
+  { id: 6, course: "Software Engineering", code: "CS302", marks: 84, grade: "A", credits: 4, semester: 3, faculty: "Prof. Arjun Nair" },
+  { id: 7, course: "Machine Learning", code: "CS303", marks: 88, grade: "A", credits: 4, semester: 3, faculty: "Dr. Kavya Rao" },
+  { id: 8, course: "Design & Analysis of Algorithms", code: "CS401", marks: 94, grade: "S", credits: 4, semester: 4, faculty: "Dr. Kavya Rao" },
+  { id: 9, course: "Software Engineering & Object-Oriented Design", code: "CS402", marks: 89, grade: "A", credits: 4, semester: 4, faculty: "Prof. Arjun Nair" },
+  { id: 10, course: "Computer Networks & Distributed Systems", code: "CS403", marks: 85, grade: "A", credits: 3, semester: 4, faculty: "Dr. Kavya Rao" },
 ];
 
 router.get("/", (req, res) => {

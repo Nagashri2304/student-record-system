@@ -41,10 +41,16 @@ export default function GradesView() {
             marks: g.marks !== undefined ? g.marks : 85,
             grade: g.letter_grade || g.grade || 'A',
             credits: g.credits || 4,
-            semester: g.semester || 3,
+            semester: Number(g.semester) || 3,
             faculty: g.faculty || 'Dr. Kavya Rao',
           }))
-          setAllGrades(mapped)
+          // Merge with initial catalog to ensure all 4 semesters have complete course records
+          setAllGrades((prev) => {
+            const codeMap = new Map()
+            prev.forEach((item) => codeMap.set(item.code, item))
+            mapped.forEach((item) => codeMap.set(item.code, { ...codeMap.get(item.code), ...item }))
+            return Array.from(codeMap.values())
+          })
         }
       })
       .catch(() => {})
