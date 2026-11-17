@@ -31,10 +31,10 @@ router.post('/', (req, res) => {
   const { code, attended, total, deltaAttended, deltaTotal } = req.body;
   const match = attendanceList.find(a => a.code === code);
   if (match) {
-    if (deltaTotal) match.total += Number(deltaTotal);
+    if (deltaTotal !== undefined && deltaTotal !== null) match.total += Number(deltaTotal);
     else if (total !== undefined) match.total = Number(total);
 
-    if (deltaAttended) match.attended += Number(deltaAttended);
+    if (deltaAttended !== undefined && deltaAttended !== null) match.attended += Number(deltaAttended);
     else if (attended !== undefined) match.attended = Number(attended);
 
     match.lastDate = new Date().toISOString().split('T')[0];

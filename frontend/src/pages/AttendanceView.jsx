@@ -77,10 +77,11 @@ export default function AttendanceView() {
   useEffect(() => {
     api.get('/attendance')
       .then((res) => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setRecords(res.data)
+        const raw = res.data?.data || res.data || []
+        if (Array.isArray(raw) && raw.length > 0) {
+          setRecords(raw)
           try {
-            localStorage.setItem('edutrack_attendance_records', JSON.stringify(res.data))
+            localStorage.setItem('edutrack_attendance_records', JSON.stringify(raw))
           } catch {}
         }
       })
@@ -112,10 +113,15 @@ export default function AttendanceView() {
     const presentCount = classRoster.filter((s) => s.status === 'present').length
     const absentCount = classRoster.filter((s) => s.status === 'absent').length
 
-    // Check specific status for Aarav Sharma (student_id: 1, student@edutrack.edu / default student user)
-    // If Aarav is marked 'present', deltaAttended = 1; if Aarav is marked 'absent', deltaAttended = 0!
-    const aaravStudent = classRoster.find((s) => s.student_id === 1 || s.roll_number === 'USN2026CS001')
-    const isAaravPresent = aaravStudent ? aaravStudent.status === 'present' : presentCount > 0
+    // Find student in roster (Aarav Sharma USN2026CS001 or first student)
+    const aaravStudent = classRoster.find(
+      (s) =>
+        s.student_id === 1 ||
+        s.roll_number === 'USN2026CS001' ||
+        (s.name && s.name.toLowerCase().includes('aarav'))
+    ) || classRoster[0]
+
+    const isAaravPresent = aaravStudent ? aaravStudent.status === 'present' : false
 
     // Update the course aggregate record locally in UI
     const updatedRecords = records.map((r) =>
@@ -144,16 +150,15 @@ export default function AttendanceView() {
 
     setTimeout(() => {
       setSubmitting(false)
-      const aaravStatusText = aaravStudent
-        ? ` (Aarav Sharma: ${aaravStudent.status.toUpperCase()})`
-        : ''
+      const studentLabel = aaravStudent ? aaravStudent.name : 'Student'
+      const studentStatusDisplay = isAaravPresent ? 'PRESENT ✓' : 'ABSENT ✕'
+      const currentCourseRecord = updatedRecords.find((r) => r.code === activeCourse)
+
       setNotice(
-        `✓ Session recorded for ${activeCourse} on ${sessionDate}: ${presentCount} Present, ${absentCount} Absent${aaravStatusText}. Total sessions increased to ${
-          (records.find((r) => r.code === activeCourse)?.total || 0) + 1
-        }.`
+        `✓ Attendance recorded for ${activeCourse} on ${sessionDate} — Cohort: ${presentCount} Present, ${absentCount} Absent. [${studentLabel}: ${studentStatusDisplay}]. Course Total: ${currentCourseRecord?.attended || 0} / ${currentCourseRecord?.total || 0} classes attended.`
       )
-      setTimeout(() => setNotice(''), 6000)
-    }, 400)
+      setTimeout(() => setNotice(''), 7000)
+    }, 300)
   }
 
   const totalAttended = records.reduce((acc, c) => acc + c.attended, 0)
